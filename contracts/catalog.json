@@ -1,11 +1,14 @@
 {
-  "version": 1,
-  "source": "CIRANDA_PLANO_MESTRE_V3 (1).md",
-  "release_scope": "MVP; GC-08 and GC-10 deferred, never implicitly sealed",
+  "version": 2,
+  "source": "CIRANDA_PLANO_MESTRE_V3.md",
+  "architecture_decision": "docs/DECISOES_ARQUITETURAIS.md#da-001--orquestrador-profissional-primeiro",
+  "release_scope": "Professional MVP first; GC-09 is optional phase 3 and never blocks the professional release. Implementation authorization is not a contract seal.",
+  "presentation": { "default": "professional", "farm": "optional", "shared_runtime": true, "theme_switch_restarts_sessions": false },
   "contracts": [
     {
       "id": "GC-00",
       "version": 1,
+      "phase": 1,
       "title": "Fundação e governança",
       "owner": "REGENTE",
       "status": "blocked",
@@ -51,6 +54,7 @@
     {
       "id": "GC-01",
       "version": 1,
+      "phase": 1,
       "title": "Spikes e orçamento técnico",
       "owner": "unassigned",
       "status": "draft",
@@ -90,6 +94,7 @@
     {
       "id": "GC-02",
       "version": 1,
+      "phase": 1,
       "title": "Motor de terminal",
       "owner": "unassigned",
       "status": "draft",
@@ -139,6 +144,7 @@
     {
       "id": "GC-03",
       "version": 1,
+      "phase": 1,
       "title": "Persistência e recuperação",
       "owner": "unassigned",
       "status": "draft",
@@ -187,17 +193,20 @@
     },
     {
       "id": "GC-04",
-      "version": 1,
+      "version": 2,
+      "phase": 1,
       "title": "Canvas, UX e foco",
       "owner": "unassigned",
       "status": "draft",
       "depends_on": [
         "GC-02",
-        "GC-03"
+        "GC-03",
+        "GC-05",
+        "GC-07"
       ],
       "allowed_paths": [],
-      "scope": "React Flow, nós, zoom semântico, atalhos, navegação por teclado, overlays e gerenciamento de foco.",
-      "invariant": "Uma fonte de verdade para foco; zoom nunca destrói PTY.",
+      "scope": "Modo Profissional escuro padrao: canvas infinito, pan/zoom, nos arrastaveis/redimensionaveis, criacao/exclusao explicita de agentes, conexoes funcionais context_reference, grupos, persistencia, atalhos, menus e foco.",
+      "invariant": "Uma fonte de verdade para foco e estado de execucao; UI e temas nao possuem o ciclo de vida de processos. Zoom, montagem e tema nunca reiniciam ou destroem PTY.",
       "requirements_status": "not_implemented",
       "risks": [
         "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
@@ -227,12 +236,33 @@
           "id": "P-04-05",
           "criterion": "Teclado e foco visível cobrem ações principais.",
           "status": "not_run"
+        },
+        {
+          "id": "P-04-06",
+          "criterion": "Modo Profissional inicia por padrao sem carregar ou exigir assets Fazenda.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-04-07",
+          "criterion": "Criar e excluir no de agente chama dominio explicitamente; remover visualizacao nao encerra sessao por efeito de desmontagem.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-04-08",
+          "criterion": "Grupos, geometria e viewport persistem e sao restaurados; nenhuma sessao encerrada e exibida como processo vivo.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-04-09",
+          "criterion": "Conexao context_reference associa contexto selecionavel ao destino; endpoint invalido e rejeitado e conectar nao executa nem injeta texto no PTY.",
+          "status": "not_run"
         }
       ]
     },
     {
       "id": "GC-05",
       "version": 1,
+      "phase": 1,
       "title": "Adaptadores e Peão de Palha",
       "owner": "unassigned",
       "status": "draft",
@@ -277,13 +307,16 @@
     },
     {
       "id": "GC-06",
-      "version": 1,
+      "version": 2,
+      "phase": 2,
       "title": "Scheduler e isolamento",
       "owner": "unassigned",
       "status": "draft",
       "depends_on": [
         "GC-03",
-        "GC-05"
+        "GC-04",
+        "GC-05",
+        "GC-07"
       ],
       "allowed_paths": [],
       "scope": "Fila, DAG de dependências, papéis, concorrência, git worktrees e integração serial.",
@@ -327,13 +360,15 @@
     },
     {
       "id": "GC-07",
-      "version": 1,
-      "title": "Porteira e confinamento",
+      "version": 2,
+      "phase": 1,
+      "title": "Aprovacoes e confinamento (Porteira apenas no tema Fazenda)",
       "owner": "unassigned",
       "status": "draft",
       "depends_on": [
+        "GC-02",
         "GC-03",
-        "GC-06"
+        "GC-05"
       ],
       "allowed_paths": [],
       "scope": "Classes de risco, política de caminhos, aprovação por ação, auditoria e notificações.",
@@ -383,6 +418,7 @@
     {
       "id": "GC-08",
       "version": 1,
+      "phase": 2,
       "title": "Cartas e revisão cruzada",
       "owner": "unassigned",
       "status": "draft",
@@ -427,17 +463,19 @@
     },
     {
       "id": "GC-09",
-      "version": 1,
-      "title": "Fazenda, Caramelo e gamificação",
+      "version": 2,
+      "phase": 3,
+      "title": "Tema Fazenda opcional, Caramelo e gamificacao",
       "owner": "unassigned",
       "status": "draft",
       "depends_on": [
         "GC-04",
-        "GC-07"
+        "GC-07",
+        "GC-08"
       ],
       "allowed_paths": [],
       "scope": "Projeção de eventos em mapa, estados das plantas, mascote, clima, XP e modo Escritório.",
-      "invariant": "Camada visual não controla permissões nem estado de domínio; XP só cosmético.",
+      "invariant": "Fazenda e opcional e nao bloqueia nucleo profissional. Ambas as apresentacoes compartilham exatamente o mesmo estado, IDs e sessoes; troca nao reinicia/encerra processos nem perde dados; XP so cosmetico.",
       "requirements_status": "not_implemented",
       "risks": [
         "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
@@ -477,12 +515,18 @@
           "id": "P-09-07",
           "criterion": "Falha no renderer visual não interrompe execução.",
           "status": "not_run"
+        },
+        {
+          "id": "P-09-08",
+          "criterion": "Alternar Profissional/Fazenda preserva IDs, PIDs ativos, saida e tarefas; nenhuma chamada de spawn/terminate/reset ocorre e nao ha perda de dados.",
+          "status": "not_run"
         }
       ]
     },
     {
       "id": "GC-10",
       "version": 1,
+      "phase": 2,
       "title": "Recursos ampliados",
       "owner": "unassigned",
       "status": "draft",
@@ -527,7 +571,8 @@
     },
     {
       "id": "GC-11",
-      "version": 1,
+      "version": 2,
+      "phase": 1,
       "title": "Entrega, instalação e operação",
       "owner": "unassigned",
       "status": "draft",
@@ -538,9 +583,7 @@
         "GC-03",
         "GC-04",
         "GC-05",
-        "GC-06",
-        "GC-07",
-        "GC-09"
+        "GC-07"
       ],
       "allowed_paths": [],
       "scope": "E2E, acessibilidade, instalador Windows, documentação, atualização, backup, diagnóstico e release.",
@@ -557,7 +600,7 @@
         },
         {
           "id": "P-11-02",
-          "criterion": "E2E Primeira Colheita passa de ponta a ponta.",
+          "criterion": "E2E profissional: abrir CIRANDA, criar terminal, executar comando real, visualizar saida, encerrar sessao e reabrir layout, sem exigir Fazenda.",
           "status": "not_run"
         },
         {

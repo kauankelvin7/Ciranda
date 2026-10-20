@@ -2,7 +2,7 @@
 Orquestracao profissional local-first de agentes de IA. Plano mestre v3.1 e decisoes do proprietario sao as fontes de requisitos; nenhum contrato e considerado concluido sem provas reproduziveis.
 ## Regras
 - Trabalhar apenas dentro deste repositorio e suas worktrees.
-- Nao publicar, fazer push, deploy, gastar, ler credenciais pessoais, alterar configuracoes globais ou apagar dados fora do repositorio.
+- Nao publicar, fazer push, deploy, gastar, ler credenciais pessoais, alterar configuracoes globais ou apagar dados fora do repositorio sem autorizacao especifica. Excecoes atuais do proprietario: instalar MSVC C++/Windows SDK; conectar e enviar fonte revisada a https://github.com/kauankelvin7/Ciranda.git. Sem force-push, deploy ou publicacao de executaveis/logs privados/credenciais. Autorizacoes nao concedem Selo nem liberam acoes do produto.
 - Sem bypass de sandbox. Usar Codex workspace-write e aprovacoes automaticas quando disponiveis.
 - Manter no maximo Regente + 2 trabalhadores; reduzir durante builds pesados.
 - Testes e evidencias reais. Nao inventar sucesso.

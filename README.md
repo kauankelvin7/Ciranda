@@ -1,6 +1,6 @@
 # CIRANDA
 
-Aplicativo Windows local-first de orquestração de agentes. A especificação é [Plano mestre v3](CIRANDA_PLANO_MESTRE_V3%20%281%29.md). O estado real está em [docs/STATUS.md](docs/STATUS.md).
+Aplicativo profissional Windows local-first de orquestração de agentes. Modo Profissional é padrão; Fazenda é tema opcional posterior. Especificação: [Plano mestre v3.1](CIRANDA_PLANO_MESTRE_V3.md) e [decisão arquitetural](docs/DECISOES_ARQUITETURAIS.md). O estado real está em [docs/STATUS.md](docs/STATUS.md); scaffold/build frontend não equivalem a terminal real ou MVP validado.
 
 ## Desenvolvimento local
 

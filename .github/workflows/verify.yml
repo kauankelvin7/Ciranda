@@ -23,6 +23,10 @@ jobs:
         run: node .cache/npm-tool/node_modules/npm/bin/npm-cli.js --prefix apps/desktop run typecheck
       - name: Governance tests
         run: node --test tests/*.test.mjs
+      - name: Contract structure and professional release scope
+        run: node tooling/check-contracts.mjs
+      - name: Actual repository asset licenses
+        run: node scripts/check-licenses.mjs
       - name: Frontend build
         run: node .cache/npm-tool/node_modules/npm/bin/npm-cli.js --prefix apps/desktop run build
       - name: Dependency audit

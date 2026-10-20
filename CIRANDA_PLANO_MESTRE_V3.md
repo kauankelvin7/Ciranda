@@ -629,9 +629,11 @@ Mensagens de agentes, conteúdo de arquivos e saída de ferramentas são **dados
 
 Cada Grande Contrato possui `id`, versão, dono, dependências, arquivos permitidos, requisitos cobertos, riscos, entregáveis, provas e status (`draft → ready → executing → review → proven → sealed`, com `blocked` e `failed`). `proven` significa que o executor automatizado verificou as provas; `sealed` exige revisão independente e aprovação humana. Um contrato bloqueado não libera sucessores.
 
-**Dependências de liberação:** GC-00 → GC-01 → {GC-02, GC-03}; {GC-02, GC-03} → GC-04 e GC-05; {GC-03, GC-05} → GC-06; {GC-03, GC-06} → GC-07; {GC-06, GC-07} → GC-08; {GC-04, GC-07} → GC-09/10. GC-11 valida o escopo do release. A Fase 1 prioriza núcleo profissional e segurança básica; Fase 2 amplia orquestração; GC-09 é apenas Fase 3 e **não é dependência do release profissional**. A autorização posterior do proprietário permite implementar partes independentes de GC-02/03/04 agora, mas nenhum bloqueio ou falta de prova será convertido em contrato aprovado.
+**Dependências de liberação v3.1:** GC-00 → GC-01 → {GC-02, GC-03}; {GC-02, GC-03} → GC-05; {GC-02, GC-03, GC-05} → GC-07; {GC-02, GC-03, GC-05, GC-07} → GC-04; {GC-03, GC-04, GC-05, GC-07} → GC-06; {GC-06, GC-07} → GC-08; {GC-04, GC-07, GC-08} → GC-09; {GC-04, GC-07} → GC-10. GC-11 profissional exige GC-00/01/02/03/04/05/07, sem dependência direta ou transitiva de Fazenda ou automação completa. Fase 2: GC-06/08/10. Fase 3: GC-09. Segurança básica GC-07 vem antes da automação, evitando depender do scheduler para proteger processos. A ordem explícita posterior permite implementar partes de GC-02/03/04 agora; bloqueios e provas não executadas continuam visíveis e não se tornam aprovação.
 
 ### 12.2 Catálogo e provas
+
+Revisão v3.1: `contracts/catalog.json` v2 preserva os 12 contratos e adiciona P-04-06 (Profissional padrão), P-04-07 (ciclo de vida explícito), P-04-08 (grupos/layout/estado interrompido), P-04-09 (semântica funcional de referências nas conexões) e P-09-08 (troca de tema preserva sessões, processos e dados). Total: 71 provas especificadas, não executadas por esta atualização. P-11-02 é a jornada profissional. `node tooling/check-contracts.mjs` verifica estrutura/IDs/DAG e que o release profissional não depende de Fazenda; isso não valida o runtime.
 
 #### GC-00 — Fundação e governança
 
@@ -918,7 +920,7 @@ Medir p50/p95/p99 de eventos, FPS, RAM, CPU, bytes IPC/s, sessões ativas, perda
 
 Uma tarefa só é concluída se: critérios de aceite verificáveis estão cobertos; código tem revisão independente; testes positivos e negativos passaram; não há regressão crítica; documentação e ADRs estão atualizados; artefatos de prova têm hash e commit; políticas de licença e segurança passam; e ações sensíveis receberam autorização. **"Pronto" sem evidência = `review` ou `blocked`, nunca `done`.**
 
-Marcos: **M0** fundação selada; **M1** PoCs comprovadas; **M2** terminal e persistência; **M3** canvas, foco e adaptadores; **M4** scheduler e Porteira; **M5 Primeira Colheita** com fazenda, Caramelo e E2E; **M6** comunicação e recursos ampliados; **M7** release candidato aprovado. Cada marco só avança quando contratos obrigatórios estão selados.
+Marcos v3.1: **M0** fundação selada; **M1** PoCs comprovadas; **M2** terminal/persistência/segurança; **M3 MVP Profissional** canvas, foco, adaptadores e E2E real; **M4** orquestração autônoma/revisão; **M5** comunicação e recursos ampliados; **M6** Fazenda opcional (antiga Primeira Colheita); **M7** release candidato aprovado conforme seu escopo. Implementações autorizadas podem ficar em revisão enquanto gates permanecem bloqueados. Marcos aprovados continuam exigindo provas e aceite próprios.
 
 ## 19. Prompt de início para a equipe de agentes
 

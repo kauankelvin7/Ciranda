@@ -1,16 +1,28 @@
 # STATUS — CIRANDA
 
-Atualizado em 2026-10-20. **GC-00: blocked, implementação parcial; nenhum contrato selado.** O plano correto foi recuperado como `CIRANDA_PLANO_MESTRE_V3 (1).md`. Afirmações históricas sem logs/commit/hash foram substituídas por verificações desta operação.
+Atualizado em 2026-10-20. **GC-00: blocked, implementação parcial; nenhum contrato selado.** Plano corrente `CIRANDA_PLANO_MESTRE_V3.md` v3.1 e decisão vinculante `docs/DECISOES_ARQUITETURAIS.md`: **Profissional padrão, Fazenda opcional e fora da implementação atual**. A ordem posterior do proprietário autoriza implementação paralela de canvas/PTY apesar dos bloqueios, mas não concede aprovação contratual.
+
+## Missão atual — MVP profissional verificável
+
+- REGENTE: `codex/professional-first`, contrato de integração `docs/SESSION_API.md`, plano/contratos atualizados e integração/revisão. Catálogo: 12 contratos/71 provas especificadas; checker de estrutura/DAG passou, sem alegar runtime. CI recebeu gate do manifesto real de assets; workflow remoto ainda não executado.
+- JARDINEIRO: `.worktrees/jardineiro-profissional`, `codex/mvp-professional-canvas`; entregou `7bcbdb6` (canvas/xterm/modelo/persistência v1) e `ff4ef17` (evidências). Relatou 20 testes unitários, lint, tipos, build e governança passados. **Em revisão no REGENTE; ainda sem smoke Tauri/PTY ponta a ponta.** Agora assume SENTINELA temporário para backend após entrega do FERREIRO.
+- FERREIRO: `.worktrees/ferreiro-profissional`, `codex/mvp-pty-windows`; implementa sessões/PTY Windows, política de caminhos, Job Object e SQLite. Não há entrega compilada/validada até o momento deste registro.
+- Diagnóstico `EPERM`: `node --version` e `git --version` diretos funcionam; os quatro subprocessos de teste recebem EPERM no sandbox e passam na execução diagnóstica pontual aprovada. Evidências `proofs/mvp-regente/processes-*.json`. Isso localiza o bloqueio no contexto de criação de subprocessos, sem alterar sandbox ou ACL global; não é uma falha dos testes de projeto.
+- MSVC: não encontrado nas localizações padrão; `link.exe` resolvido pertencia ao Git. Rust 1.94.1 e componentes clippy/rustfmt da toolchain específica existem. Proprietário autorizou instalar C++ Build Tools/Windows SDK; bootstrapper Microsoft com assinatura `Valid` verificada, instalação iniciada, **resultado ainda pendente**. Nenhum build novo é declarado aprovado.
+- Referência Maestri: instalador 0.25.2 inventariado sem executar/alterar; análise limitada por termos oficiais a metadados/documentação/uso normal. `docs/ANALISE_MAESTRI.md` e `docs/PARIDADE_MAESTRI.md`. Sem alegação de framework ou paridade não comprovada.
+- Remoto autorizado: `https://github.com/kauankelvin7/Ciranda.git`, inicialmente sem branches; `origin` configurado. Publicação somente de fonte revisada e resumos sanitizados, com caches/executáveis/bancos/logs privados ignorados. Nenhum push é alegado até confirmação da operação Git.
+
+O que falta para chamar de MVP executável: integrar entregas revisadas, compilar Tauri no ambiente preparado e executar smoke real (abrir app, criar terminal, comando real/saída, encerrar e reabrir layout). Preview de navegador e unit tests não substituem esse teste.
 
 ## Entrega atual
 
 - Baseline recebido preservado no commit `2bf65b2`.
 - REGENTE: branch `codex/gc00-foundation`, checkout principal; documentação, tarefas, versões npm fixadas, lockfiles npm/Rust, lint e definição CI Windows.
 - FERREIRO: branch `codex/gc00-verification`, `.worktrees/ferreiro`; política mediada, licenças de assets, catálogo de 12 contratos/66 provas, runner e gates fail-closed, sob revisão.
-- SENTINELA: papel temporário independente, somente leitura. Identificou validação insuficiente de metadados e escrita por links; correção `083d7c8` aguarda revisão final.
+- SENTINELA: revisão histórica independente concluída por JARDINEIRO em `e76934e`, complemento `bdae97e`; hashes de cinco saídas e os logs da revalidação FERREIRO conferidos. Os 8 testes de governança passaram em `54df078`; não validam automaticamente commits posteriores.
 - Maestri configurado nesta sessão: REGENTE conectado a FERREIRO e JARDINEIRO; presets Codex e Antigravity listados com Maestro off. Detalhes e erros em `docs/MAESTRI.md`.
 - FERREIRO reutilizado em sua worktree, Codex 0.163.0 via executável absoluto com `--approve-for-me`; identidade/branch/AGENTS confirmados. Revalidação GC-00 registrou `blocked`: subprocessos Node/Git retornam `EPERM`; alternativa com isolamento de testes desativado teve 5/8 pass e 3 falhas. Evidência diagnóstica em `.worktrees/ferreiro/proofs/maestri-ferreiro/revalidation.json`, sem alteração de implementação e sem prova contratual aprovada.
-- JARDINEIRO: Antigravity CLI 1.4.3 em `.worktrees/jardineiro`, branch `codex/gc00-jardineiro-review`, HEAD inicial `54df078`. Checagem inicial bloqueada por cota, checagem posterior respondida ao REGENTE. Por autorização explícita posterior do proprietário, terminal ajustado para `agy --dangerously-skip-permissions`, opção confirmada no help local; preset global preservado. Revisão GC-00 reenviada e ainda não entregue. GC-04 segue bloqueado.
+- JARDINEIRO: revisão GC-00 na antiga `.worktrees/jardineiro` concluída e preservada. Terminal reutilizado para a nova worktree acima; autoaprovação do Antigravity foi autorizada pelo proprietário, sem alteração do preset global. GC-04 continua sem liberação contratual, com implementação agora explicitamente autorizada.
 
 ## Verificações reais
 
