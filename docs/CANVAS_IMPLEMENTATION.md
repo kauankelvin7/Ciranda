@@ -155,5 +155,3 @@ Em conformidade com a designação do REGENTE e as diretrizes do plano mestre, f
 - **Tipo de Auditoria:** Análise estática profunda de código-fonte (read-only).
 - **Restrição Ambiental:** Devido ao espaço em disco no ambiente do host (~370 MB livres em C: após falha do instalador MSVC com 0x80070070), a compilação e execução dos testes Rust não foram realizadas localmente.
 - **Classificação:** Os achados revisados tiveram alterações correspondentes no código. O backend está apto para tentativa de compilação/testes na CI; GC-02/03 completos e SESSION_API em runtime permanecem não comprovados. Esta revisão não concede Selo nem aprovação contratual.
-
-

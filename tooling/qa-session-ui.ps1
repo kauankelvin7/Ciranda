@@ -47,10 +47,15 @@ try {
   const banner=document.createElement('aside');banner.textContent='TESTE COM IPC SIMULADO - SEM PROCESSOS REAIS';
   banner.style.cssText='position:fixed;bottom:0;left:0;background:#783900;color:white;padding:8px;z-index:99999;pointer-events:none';document.body.appendChild(banner);
   const start=document.querySelector('button.reconnect');if(!start)throw Error('Native start button missing');
-  start.click();start.click();await new Promise(r=>setTimeout(r,150));
+  start.click();start.click();
+  const deadline=Date.now()+5000;
+  while(!document.querySelector('.node-status-badge.running')){
+    if(Date.now()>deadline)throw Error('Session creation did not settle in the UI');
+    await new Promise(r=>setTimeout(r,25));
+  }
   if(qa.sessions.length!==1)throw Error('Concurrent create produced duplicate sessions');
   document.querySelector('[aria-label="Salvar layout"]').click();await new Promise(r=>setTimeout(r,100));
-  if(JSON.parse(qa.saved).nodes[0].sessionId!=='mock-session-1')throw Error('Session association not persisted in parent layout');
+  if(JSON.parse(qa.saved).nodes[0].sessionId!=='mock-session-1')throw Error('Session association not persisted in parent layout: '+qa.saved);
   document.querySelector('.xterm-helper-textarea').focus();
   return {scope:'React/xterm with IPC TEST DOUBLE; no process or native backend',session:qa.sessions[0]?.id};
 })()
@@ -94,8 +99,12 @@ try {
     {chunks:[],state:'exited',truncated:false}
   ];
   qa.sessions.find(s=>s.id==='mock-session-2').state='exited';
-  await new Promise(r=>setTimeout(r,450));
-  if(qa.drainSteps.length)throw Error('Exited output was not drained');
+  const drainDeadline=performance.now()+10000;
+  while(qa.drainSteps.length){
+    if(performance.now()>drainDeadline)throw Error('Exited output was not drained: '+JSON.stringify({remaining:qa.drainSteps.length,reads:qa.calls.filter(c=>c.command==='session_read').slice(-8),badge:document.querySelector('.node-status-badge')?.textContent}));
+    await new Promise(r=>setTimeout(r,100));
+  }
+  await new Promise(r=>setTimeout(r,150));
   const reads=qa.calls.filter(c=>c.command==='session_read'&&c.args.sessionId==='mock-session-2');
   if(!reads.some(c=>c.args.afterSeq===2))throw Error('Final sequence was not consumed');
   if(!document.querySelector('.node-status-badge.exited'))throw Error('Final state not displayed after drain');
