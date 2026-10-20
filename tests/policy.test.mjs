@@ -32,6 +32,8 @@ test('audit refuses a junction/symlink component instead of following it', () =>
     mkdirSync(path.join(fixture, 'destination'));
     symlinkSync(path.join(fixture, 'destination'), link, process.platform === 'win32' ? 'junction' : 'dir');
     assert.throws(() => auditAction(fixture, { action: 'push' }, 'alias/escape.jsonl'), /Links/);
+    rmSync(path.join(fixture, 'destination'), { recursive: true });
+    assert.throws(() => auditAction(fixture, { action: 'push' }, 'alias/escape.jsonl'), /Links/, 'dangling link must still be rejected');
   } finally {
     try { unlinkSync(link); } catch { /* link creation may itself have failed */ }
     rmSync(fixture, { recursive: true });

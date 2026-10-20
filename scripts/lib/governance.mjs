@@ -2,6 +2,7 @@ import { appendFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdir
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { proofCommands } from './proof-commands.mjs';
 
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 export const readJson = file => JSON.parse(readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
@@ -13,7 +14,13 @@ export function inside(root, target) {
   let cursor = base;
   for (const part of relative.split(path.sep).filter(Boolean)) {
     cursor = path.join(cursor, part);
-    if (existsSync(cursor) && lstatSync(cursor).isSymbolicLink()) throw new Error('Links are not allowed');
+    try {
+      if (lstatSync(cursor).isSymbolicLink()) throw new Error('Links are not allowed');
+    } catch (error) {
+      // existsSync follows links and hides dangling symlinks; inspect the entry
+      // itself and ignore only a genuinely absent entry.
+      if (error.code !== 'ENOENT') throw error;
+    }
   }
   return resolved;
 }
@@ -85,12 +92,44 @@ export function sourceIsClean(root) {
 }
 export function validateProof(root, proof, expectedId) {
   const errors = [];
+  if (!proof || typeof proof !== 'object' || Array.isArray(proof)) return ['Invalid proof record'];
+  const expected = Object.values(proofCommands).find(item => item.id === expectedId);
+  if (!expected) return ['Proof ID has no supported executor'];
   if (proof.proof_id !== expectedId || proof.status !== 'pass' || proof.exit_code !== 0) errors.push('Proof did not pass');
+  if (proof.contract_id !== 'GC-00') errors.push('Unexpected contract ID');
+  if (proof.command !== `node ${expected.args.join(' ')}`) errors.push('Command does not match allowlisted executor');
+  if (proof.scope !== expected.scope) errors.push('Proof scope differs from executor');
+  if (proof.source_unchanged !== true) errors.push('Source changed during execution');
+  const isoDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString() === value;
+  if (!isoDate(proof.started_at_utc) || !isoDate(proof.finished_at_utc) || Date.parse(proof.finished_at_utc) < Date.parse(proof.started_at_utc) || Date.parse(proof.finished_at_utc) > Date.now() + 60000) errors.push('Invalid execution timestamps');
+  const environment = proof.environment;
+  if (!environment || !['Windows_NT', 'Linux', 'Darwin'].includes(environment.os) || !['x64', 'arm64', 'ia32', 'arm', 'ppc64', 's390x', 'riscv64'].includes(environment.arch) || !/^v\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/.test(environment.node ?? '') || typeof environment.release !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._+() -]{0,127}$/.test(environment.release)) errors.push('Invalid execution environment');
   if (proof.commit !== git(root, ['rev-parse', 'HEAD'])) errors.push('Proof commit is stale');
   if (!sourceIsClean(root) || proof.source_sha256 !== sourceSnapshot(root)) errors.push('Source changed since proof');
   try {
-    if (sha256(readFileSync(inside(root, proof.artifact))) !== proof.artifact_sha256) errors.push('Evidence hash mismatch');
+    if (proof.artifact !== `proofs/${expectedId}.output.json`) throw new Error('Unexpected artifact');
+    const artifactPath = inside(root, proof.artifact);
+    if (lstatSync(artifactPath).size > 2 * 1024 * 1024) throw new Error('Evidence too large');
+    const bytes = readFileSync(artifactPath);
+    if (sha256(bytes) !== proof.artifact_sha256) errors.push('Evidence hash mismatch');
+    const artifact = JSON.parse(bytes.toString('utf8'));
+    if (!artifact || typeof artifact.stdout !== 'string' || typeof artifact.stderr !== 'string' || artifact.error !== null || artifact.execution?.exit_code !== 0 || artifact.execution?.signal !== null) errors.push('Invalid execution artifact');
+    else {
+      const count = name => { const hits = [...artifact.stdout.matchAll(new RegExp(`^# ${name} (\\d+)\\r?$`, 'gm'))]; return hits.length === 1 ? Number(hits[0][1]) : NaN; };
+      if (!(count('tests') > 0) || count('pass') !== count('tests') || ['fail', 'cancelled', 'skipped', 'todo'].some(name => count(name) !== 0)) errors.push('Artifact does not report a complete passing TAP run');
+    }
   } catch { errors.push('Evidence missing or unsafe'); }
-  if (!proof.started_at_utc || !proof.environment?.node || !proof.command) errors.push('Incomplete execution metadata');
+  // Structural consistency and integrity are not authenticated anti-forgery.
+  // A repository writer can manufacture matching metadata; sealing stays disabled.
   return errors;
+}
+export function prepareProofPaths(root, id) {
+  if (!Object.values(proofCommands).some(command => command.id === id)) throw new Error('Unknown proof ID');
+  const directory = inside(root, 'proofs');
+  const artifact = inside(root, `proofs/${id}.output.json`);
+  const record = inside(root, `proofs/${id}.json`);
+  mkdirSync(directory, { recursive: true });
+  // Recheck after creation; never intentionally follow existing links/junctions.
+  inside(root, 'proofs'); inside(root, `proofs/${id}.output.json`); inside(root, `proofs/${id}.json`);
+  return { artifact, record };
 }
