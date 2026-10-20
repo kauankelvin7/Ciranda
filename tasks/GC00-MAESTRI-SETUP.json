@@ -1,0 +1,71 @@
+{
+  "id": "GC00-MAESTRI-SETUP",
+  "contract": "GC-00",
+  "owner": "REGENTE",
+  "status": "review",
+  "branch": "codex/gc00-foundation",
+  "allowed_paths": ["tasks/GC00-MAESTRI-SETUP.json", "docs/MAESTRI.md", "docs/STATUS.md", "tasks/backlog.md", "tooling/maestri-evidence.ps1", "proofs/maestri-setup/"],
+  "acceptance": [
+    "Somente REGENTE, FERREIRO e JARDINEIRO; nenhum subagente interno",
+    "Presets listados, Maestro dos trabalhadores desligado e conexoes observadas via maestri list",
+    "FERREIRO reutiliza worktree inspecionada e comando Codex somente com --approve-for-me",
+    "JARDINEIRO usa base agy do preset e worktree exclusiva; --dangerously-skip-permissions foi autorizado explicitamente depois pelo proprietario e confirmado no --help",
+    "Identidade, diretorio, branch e leitura de AGENTS confirmados antes de qualquer edicao",
+    "Tarefas GC-00 separadas com allowed_paths e retorno via maestri ask REGENTE",
+    "Erros exatos e limites registrados; GC-04 permanece bloqueado"
+  ],
+  "workers": [
+    {
+      "id": "GC00-FERREIRO-REVALIDATION",
+      "owner": "FERREIRO",
+      "status": "blocked",
+      "identity_confirmed": true,
+      "confirmed_head": "083d7c8efb42084bee52ac54f49a9c28ff06afb7",
+      "evidence": ".worktrees/ferreiro/proofs/maestri-ferreiro/revalidation.json",
+      "blocked_reason": "Node subprocessos retornam EPERM; teste alternativo 5/8 pass, 3 falhas. Evidencias sao diagnosticas, nao provas GC-00 aprovadas.",
+      "branch": "codex/gc00-verification",
+      "worktree": ".worktrees/ferreiro",
+      "specialty": "Rust, Tauri, SQLite, PTY, processos Windows e seguranca",
+      "allowed_paths": ["tasks/GC00-FERREIRO-REVALIDATION.json", "proofs/maestri-ferreiro/"],
+      "acceptance": [
+        "Confirmar identidade e ler AGENTS local e AGENTS atualizado da raiz antes de editar",
+        "Preservar commits 8a81d1f e 083d7c8 e proofs existentes",
+        "Revalidar testes sinteticos de governanca do HEAD existente sem alterar implementacao",
+        "Registrar comando, exit, stdout/stderr, UTC, ambiente, commit, estado dirty e SHA-256 sem reutilizar evidencias antigas",
+        "Relatar lacunas e comandos seguros para diagnosticar bloqueios Rust, sem instalar nem compilar pesado",
+        "Nao declarar P-00-01, P-00-02 ou selo comprovados; pedir revisao ao REGENTE via maestri ask"
+      ]
+    },
+    {
+      "id": "GC00-JARDINEIRO-REVIEW",
+      "owner": "JARDINEIRO",
+      "temporary_role": "SENTINELA",
+      "status": "queued",
+      "identity_confirmed_before_restart": true,
+      "identity_reconfirmation_required": true,
+      "command": "agy --dangerously-skip-permissions",
+      "permission_authorization": "Proprietario: faca o JARDINEIRO parar de pedir permissao, ajuste o terminal dele para ele ter autorizacao total. Override somente deste terminal; preset e configuracoes globais preservados.",
+      "confirmed_head": "54df07830cf7f3feb7e9bf1686f94aa8fe2cf624",
+      "branch": "codex/gc00-jardineiro-review",
+      "worktree": ".worktrees/jardineiro",
+      "specialty": "React, TypeScript, interface, acessibilidade e revisao de frontend",
+      "allowed_paths": ["tasks/GC00-JARDINEIRO-REVIEW.json", "docs/reviews/GC00-JARDINEIRO.md", "proofs/maestri-jardineiro/"],
+      "acceptance": [
+        "Confirmar identidade, diretorio, branch e leitura de AGENTS antes de editar",
+        "Revisar independentemente GC-00 em 54df078, incluindo workflow, lockfiles, scripts de prova, metadados e gates",
+        "Conferir rastreabilidade de frontend e acessibilidade somente como revisao documental de fundacao",
+        "Entregar achados com caminho/linha e gravidade, limitacoes e comandos reproduziveis",
+        "Registrar evidencias com UTC, commit, hash e estado da arvore; dirty/stale/skipped nao passam",
+        "Nao implementar GC-04, alterar codigo, instalar dependencias nem conceder selo; retornar ao REGENTE via maestri ask"
+      ]
+    }
+  ],
+  "known_issues": [
+    "FERREIRO: hook exited with code 1; revalidacao blocked por spawn EPERM, 5/8 passaram em alternativa e 3 falharam; sem mudanca global",
+    "Antigravity: quota inicial, IDs e7aa820c-cb32-449f-a15b-de10f378a157-1 e -3; checagem posterior respondida sem quota",
+    "Depois de restaurar agy sem flags, o proprietario autorizou explicitamente permissao total; opcao --dangerously-skip-permissions confirmada no --help e aplicada somente ao mesmo terminal",
+    "Revalidacao e revisao GC-00 ainda nao entregues; nenhum selo"
+  ],
+  "requires_approval": false,
+  "human_seal_approval": null
+}
