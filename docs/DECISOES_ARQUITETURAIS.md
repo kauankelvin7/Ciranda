@@ -17,6 +17,12 @@ Ordem posterior explícita do proprietário: JARDINEIRO implementa canvas profis
 
 Esta ordem autoriza implementação revisável de partes de GC-02/03/04 apesar dos bloqueios ambientais. **Não libera contratos, não concede Selo e não altera provas para pass.** Distinguir implementação, validação local, smoke test e aprovação contratual. Escopo de hoje: abrir app profissional, criar ao menos um terminal real, executar comando, observar saída, encerrar sessão e restaurar layout. Não prometer entrega executável enquanto esses passos não ocorrerem.
 
-Sem instalação global de MSVC, alteração global, push, deploy ou publicação. Diagnosticar EPERM comparando comandos diretos com subprocessos e permissões; não desativar sandbox nem expandir permissões indiscriminadamente. Autorização já existente de autoaprovação no terminal Antigravity é específica daquele terminal e não muda o sandbox do FERREIRO ou a política do produto.
+Autorizações posteriores específicas: proprietário aprovou instalação do C++ Build Tools/Windows SDK e publicação de fonte revisada em `https://github.com/kauankelvin7/Ciranda.git`. Não autorizou outras alterações globais, gastos, force-push ou deploy. Diagnosticar EPERM comparando comandos diretos com subprocessos; não desativar sandbox nem expandir permissões indiscriminadamente. Autoaprovação no terminal Antigravity é específica daquele terminal e não muda a política do produto.
 
 Confinamento do backend valida diretório e operações mediadas no workspace; uma worktree e um cwd não são sandbox de SO para tudo que um shell interativo pode fazer. Documentar essa limitação. Capturar UTC, ambiente, commit, fonte limpa/inalterada, exits, saídas e hashes. Provas antigas continuam históricas e são reexecutadas quando necessário. Somente o proprietário pode aprovar Selo depois de provas válidas e revisão independente.
+
+## DA-003 — Geometria do canvas no primeiro MVP
+
+Escolha de implementação provisória do REGENTE, no escopo de autonomia autorizado: o primeiro canvas usa React/TypeScript com transformações CSS e arestas SVG; não introduz `@xyflow/react` nesta entrega. O modelo de layout fica em funções puras independentes do renderizador. Isso preserva o código já entregue e observado em navegador e reduz a mudança de dependências durante a integração do primeiro PTY.
+
+React Flow era a biblioteca prevista no v3. Sua adoção será reavaliada com as provas de GC-04 (30 nós, foco/teclado, acessibilidade e zoom semântico). Essas provas ainda estão pendentes; a opção provisória não elimina requisitos nem comprova desempenho. O layout v1 e o ciclo de vida do Rust não dependem da biblioteca de geometria. Tauri v2, Rust, React, TypeScript e SQLite permanecem obrigatórios.

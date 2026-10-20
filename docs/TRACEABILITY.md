@@ -46,3 +46,17 @@ Fonte: seção 6 do plano v3. Associação de provas abaixo é planejamento, nã
 | G13 | Carroça | GC-09 | P-09-01, P-09-04 |
 
 Lacunas de associação não são preenchidas por alegação: cada contrato deve detalhá-las antes de executar. O MVP inclui GC-00..07, núcleo GC-09 e jornada GC-11; adiamento de GC-08/10 não equivale a selo desses contratos.
+
+## Rastreabilidade de Acessibilidade e Interface (Fase 1 - MVP Canvas)
+
+Em conformidade com a autorização DA-002 do proprietário e as diretrizes de acessibilidade WCAG 2.1 AA:
+
+| Requisito / Recurso | Implementação no Frontend | Evidência / Verificação |
+|---|---|---|
+| **Foco Visível (N02)** | `:focus-visible` com anel de alto contraste (`#58a6ff`, 2px, offset 2px) em todos os botões, nós de terminal, campos de edição e controles. | `apps/desktop/src/styles.css` |
+| **Atalhos de Teclado (N07)** | Atalhos globais para criação de nós (`Alt+N`), salvar layout (`Ctrl+S`), zoom (`Ctrl++`, `Ctrl+-`, `Ctrl+0`), exclusão com confirmação (`Delete`) e ajuda (`?`). | `apps/desktop/src/components/Canvas.tsx`, `KeyboardShortcutsModal.tsx` |
+| **Região de Anúncios ARIA** | Elemento `aria-live="polite"` invisível (`sr-only`) anunciando criação de nós, conexões, atualizações de status e salvamento de layout para leitores de tela. | `apps/desktop/src/components/Canvas.tsx` |
+| **Papeis e Rótulos Semânticos** | Atributos `role="application"`, `role="toolbar"`, `role="region"`, `role="dialog"`, `role="menu"` e `aria-label` descritivos em todos os componentes interativos. | Todos os componentes em `apps/desktop/src/components/` |
+| **Conexões Semânticas (F06)** | Conexões `context_reference` associativas para inspeção visual sem execução arbitrária, com inspetor acessível `ContextInspector`. | `apps/desktop/src/components/ContextInspector.tsx` |
+| **Modo Profissional Escuro** | Paleta com contraste superior a 4.5:1 para texto normal e 3:1 para controles e bordas, sem componentes rurais/Fazenda. | `apps/desktop/src/styles.css` |
+

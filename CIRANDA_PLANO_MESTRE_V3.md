@@ -10,6 +10,8 @@
 
 Separação obrigatória: execução/processos; orquestração; persistência/recuperação; modelo do canvas; apresentação/temas. Ciclo de vida pertence ao Rust, nunca a montagem/desmontagem de componentes React. Manter Tauri v2, Rust, React, TypeScript e SQLite.
 
+Implementação provisória de geometria do primeiro MVP: React/TypeScript, CSS e SVG, conforme DA-003. As referências a React Flow abaixo representam a biblioteca prevista para avaliação de GC-04; não são uma dependência já instalada nem dispensam provas de desempenho, foco e acessibilidade.
+
 **Ordem de execução do proprietário:** implementar agora, em paralelo isolado, canvas profissional (JARDINEIRO) e sessões/PTY Windows (FERREIRO), mesmo se o ambiente impedir validação. Esta autorização posterior permite implementação revisável; não libera contratos bloqueados, não concede Selo e não autoriza alegar runtime validado. GC-04 permanece sem liberação contratual até cumprir seus predecessores e provas. Nenhum componente global será instalado sem autorização específica.
 
 As seções de metáfora, elenco temático, arte, XP e Primeira Colheita abaixo são especificações da futura Fase 3. Não definem a interface padrão nem bloqueiam a Fase 1. O detalhamento funcional vigente e a ordem das tarefas estão no registro de arquitetura e no backlog.

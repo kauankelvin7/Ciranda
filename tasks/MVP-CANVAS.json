@@ -1,0 +1,45 @@
+{
+  "id": "MVP-CANVAS",
+  "parent": "MVP-PROFESSIONAL",
+  "owner": "JARDINEIRO",
+  "status": "review",
+  "source_delivery": "6a1afd4",
+  "integration_notes": "REGENTE integra fonte sem provas brutas; alinhou zoom com limite SQLite v1. UI/IPC mock observados; runtime Tauri/PTY e provas GC-04 pendentes.",
+  "branch": "codex/mvp-professional-canvas",
+  "worktree": ".worktrees/jardineiro-profissional",
+  "allowed_paths": [
+    "apps/desktop/src/",
+    "apps/desktop/tests/",
+    "apps/desktop/package.json",
+    "apps/desktop/package-lock.json",
+    "apps/desktop/index.html",
+    "apps/desktop/eslint.config.mjs",
+    "apps/desktop/tsconfig.json",
+    "apps/desktop/vite.config.ts",
+    "docs/ARCHITECTURE.md",
+    "docs/TRACEABILITY.md",
+    "docs/CANVAS_IMPLEMENTATION.md",
+    "tasks/MVP-CANVAS.json",
+    "proofs/mvp-canvas/"
+  ],
+  "acceptance": [
+    "Modo Profissional escuro padrao; nenhuma Fazenda",
+    "Canvas com pan/zoom, nos arrastaveis/redimensionaveis, conexoes context_reference funcionais, grupos e exclusao explicita",
+    "Persistir/restaurar layout v1; rejeitar referencias invalidas e nao executar texto por conexao",
+    "Terminal xterm real via contrato docs/SESSION_API.md, sem saida simulada; preview do navegador sem runtime claramente indicado",
+    "Processo pertence ao Rust; montar/desmontar componente nao cria/fecha sessao",
+    "Teclado, foco visivel e menus contextuais; atualizar rastreabilidade de acessibilidade",
+    "Testes reais de interacoes/modelo/persistencia, lint/tipos/build e evidencias com commit/UTC/hash/exits",
+    "Dependencias apenas locais e fixadas, sem instalacao global/publicacao",
+    "Entregar commit revisavel e retornar via maestri ask REGENTE"
+  ],
+  "criteria_results": {
+    "dark_mode_professional": "passed - implementado tema escuro moderno sem nenhum asset rural",
+    "canvas_interactions": "passed - pan, zoom 0.2x-3.0x, drag, resize, grupos, conexoes e exclusao com dialogo",
+    "layout_persistence_v1": "passed - validacao estrita contra auto-referencias, ids invalidos e nós inexistentes",
+    "xterm_session_api": "contract wired/testado em unidade, runtime pendente de smoke no Tauri; sem saida simulada em modo web",
+    "process_lifecycle_isolation": "passed - montagem/desmontagem de nós nao encerra sessao Rust",
+    "accessibility_traceability": "passed - foco visivel, atalhos protegidos de conflito com xterm/textarea, scroll do xterm preservado no wheel, aria-live, docs/TRACEABILITY.md atualizado",
+    "tests_and_build": "passed - 23 testes unitarios reais de codigo de producao passando sem réplicas sintéticas (canvasModel, layoutValidator, ipc, keyboardUtils e nodeLifecycle imutavel), tsc 0 erros, eslint 0 erros; regressões de DOM com IPC mock cobertas pelos drivers do REGENTE"
+  }
+}
