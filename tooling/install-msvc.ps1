@@ -17,8 +17,14 @@ $record = [ordered]@{
     command = @($bootstrapper) + $arguments
     exit_code = $null
     error = $null
+    free_bytes_before = [IO.DriveInfo]::new([IO.Path]::GetPathRoot($repositoryRoot)).AvailableFreeSpace
 }
 try {
+    # Operational reserve for installer downloads, expanded C++/SDK components
+    # and the subsequent Rust build. This is a local guard, not a vendor size claim.
+    if ($record.free_bytes_before -lt 10GB) {
+        throw 'Installation not retried: less than the 10 GiB operational disk reserve is available.'
+    }
     Write-Output 'Launching Microsoft installer for the owner-authorized C++ components and Windows SDK.'
     $installerProcess = Start-Process -FilePath $bootstrapper -ArgumentList $arguments -WorkingDirectory $repositoryRoot -WindowStyle Hidden -Verb RunAs -Wait -PassThru
     $record.exit_code = $installerProcess.ExitCode
@@ -26,6 +32,7 @@ try {
     $record.error = $_.Exception.Message
 } finally {
     $record.finished_at_utc = [DateTime]::UtcNow.ToString('o')
+    $record.free_bytes_after = [IO.DriveInfo]::new([IO.Path]::GetPathRoot($repositoryRoot)).AvailableFreeSpace
     $destination = Join-Path $repositoryRoot 'proofs/mvp-regente'
     $null = New-Item -ItemType Directory -Force -Path $destination
     $filename = Join-Path $destination ('msvc-install-' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffffffZ') + '.json')

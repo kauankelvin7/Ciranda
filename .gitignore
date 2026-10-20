@@ -3,6 +3,7 @@ dist/
 target/
 .worktrees/
 .cache/
+.cargo-local/
 .ciranda/
 # Runtime evidence stays local; publish only deliberately reviewed summaries.
 proofs/**
