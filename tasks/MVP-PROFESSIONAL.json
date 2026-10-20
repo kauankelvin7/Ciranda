@@ -26,7 +26,15 @@
       "acceptance": ["Modo Profissional escuro padrao; nenhuma Fazenda", "Canvas com pan/zoom, nos arrastaveis/redimensionaveis, conexoes context_reference funcionais, grupos e exclusao explicita", "Persistir/restaurar layout v1; rejeitar referencias invalidas e nao executar texto por conexao", "Terminal xterm real via contrato docs/SESSION_API.md, sem saida simulada; preview do navegador sem runtime claramente indicado", "Processo pertence ao Rust; montar/desmontar componente nao cria/fecha sessao", "Teclado, foco visivel e menus contextuais; atualizar rastreabilidade de acessibilidade", "Testes reais de interacoes/modelo/persistencia, lint/tipos/build e evidencias com commit/UTC/hash/exits", "Dependencias apenas locais e fixadas, sem instalacao global/publicacao", "Entregar commit revisavel e retornar via maestri ask REGENTE"]
     }
   ],
-  "acceptance": ["Decisao definitiva incorporada ao plano e contratos", "Investigar MSVC/PATH e EPERM sem desativar sandbox ou instalar globalmente", "Integrar entregas revisadas sem disputar arquivos", "Smoke real: abrir CIRANDA, criar terminal, executar comando real, ver saida, encerrar sessao, reabrir layout", "Nenhuma alegacao de MVP executavel antes do smoke passar"],
+  "acceptance": ["Decisao definitiva incorporada ao plano e contratos", "Investigar MSVC/PATH e EPERM sem desativar sandbox; instalar somente componentes explicitamente autorizados", "Integrar entregas revisadas sem disputar arquivos", "Smoke real: abrir CIRANDA, criar terminal, executar comando real, ver saida, encerrar sessao, reabrir layout", "Nenhuma alegacao de MVP executavel antes do smoke passar"],
+  "review": {
+    "report": "docs/reviews/MVP-INTEGRACAO.md",
+    "status": "corrections_requested",
+    "backend_initial_source": "f4a832064986263bdb0e157b28d2326274ecae69",
+    "frontend_initial_source": "7bcbdb60b05aac375c6cd88d5a16485acf6f8cfc",
+    "native_smoke": "not_run",
+    "human_blocker": "Free disk space: authorized MSVC/SDK installer failed 0x80070070 (-2147024784). No personal files removed."
+  },
   "owner_authorizations": {
     "msvc_installation": "Authorized explicitly via request_user_input_async; Microsoft-signed bootstrapper; C++ Build Tools and Windows SDK only, no automatic reboot.",
     "remote": "https://github.com/kauankelvin7/Ciranda.git; owner explicitly authorized connecting and pushing reviewed source. No force-push or private runtime artifacts."

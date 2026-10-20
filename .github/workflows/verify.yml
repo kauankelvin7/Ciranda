@@ -1,10 +1,21 @@
 name: Verify CIRANDA
-on: [workflow_dispatch, pull_request]
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
 permissions:
   contents: read
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   foundation:
+    # Standard hosted runners are free for public repositories. Do not consume
+    # private-repository allowances or trigger billed larger runners.
+    if: ${{ github.event.repository.private == false }}
     runs-on: windows-latest
+    timeout-minutes: 35
     env:
       CARGO_HOME: ${{ github.workspace }}/.cache/cargo
       CARGO_BUILD_JOBS: '1'
@@ -21,6 +32,8 @@ jobs:
         run: node .cache/npm-tool/node_modules/npm/bin/npm-cli.js --prefix apps/desktop run lint
       - name: Types
         run: node .cache/npm-tool/node_modules/npm/bin/npm-cli.js --prefix apps/desktop run typecheck
+      - name: Frontend unit tests
+        run: node .cache/npm-tool/node_modules/npm/bin/npm-cli.js --prefix apps/desktop test
       - name: Governance tests
         run: node --test tests/*.test.mjs
       - name: Contract structure and professional release scope
@@ -42,4 +55,4 @@ jobs:
       - name: Rust dependency report
         run: cargo +1.94.1 tree --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
 
-# Definition only: no workflow run, publication or remote push is implied.
+# A workflow definition or queued run is not a successful check or native smoke.

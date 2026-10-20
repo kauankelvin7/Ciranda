@@ -30,6 +30,7 @@ const checks = {
   'clean-frontend': npm('ci'),
   lint: npm('run', 'lint'),
   types: npm('run', 'typecheck'),
+  'frontend-tests': npm('test'),
   frontend: npm('run', 'build'),
   audit: npm('audit', '--audit-level=low'),
   'rust-build': rust('build', '--locked'),

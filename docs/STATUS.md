@@ -1,62 +1,55 @@
 # STATUS — CIRANDA
 
-Atualizado em 2026-10-20. **GC-00: blocked, implementação parcial; nenhum contrato selado.** Plano corrente `CIRANDA_PLANO_MESTRE_V3.md` v3.1 e decisão vinculante `docs/DECISOES_ARQUITETURAIS.md`: **Profissional padrão, Fazenda opcional e fora da implementação atual**. A ordem posterior do proprietário autoriza implementação paralela de canvas/PTY apesar dos bloqueios, mas não concede aprovação contratual.
+Atualizado em 2026-10-20. **MVP em implementação/revisão; GC-00 bloqueado, nenhum contrato selado.** Plano `CIRANDA_PLANO_MESTRE_V3.md` v3.1 e decisão arquitetural: Profissional padrão; Fazenda opcional, adiada. Implementação paralela autorizada pelo proprietário não libera contratos.
 
-## Missão atual — MVP profissional verificável
+## Implementação e equipe
 
-- REGENTE: `codex/professional-first`, contrato de integração `docs/SESSION_API.md`, plano/contratos atualizados e integração/revisão. Catálogo: 12 contratos/71 provas especificadas; checker de estrutura/DAG passou, sem alegar runtime. CI recebeu gate do manifesto real de assets; workflow remoto ainda não executado.
-- JARDINEIRO: `.worktrees/jardineiro-profissional`, `codex/mvp-professional-canvas`; entregou `7bcbdb6` (canvas/xterm/modelo/persistência v1) e `ff4ef17` (evidências). Relatou 20 testes unitários, lint, tipos, build e governança passados. **Em revisão no REGENTE; ainda sem smoke Tauri/PTY ponta a ponta.** Agora assume SENTINELA temporário para backend após entrega do FERREIRO.
-- FERREIRO: `.worktrees/ferreiro-profissional`, `codex/mvp-pty-windows`; implementa sessões/PTY Windows, política de caminhos, Job Object e SQLite. Não há entrega compilada/validada até o momento deste registro.
-- Diagnóstico `EPERM`: `node --version` e `git --version` diretos funcionam; os quatro subprocessos de teste recebem EPERM no sandbox e passam na execução diagnóstica pontual aprovada. Evidências `proofs/mvp-regente/processes-*.json`. Isso localiza o bloqueio no contexto de criação de subprocessos, sem alterar sandbox ou ACL global; não é uma falha dos testes de projeto.
-- MSVC: não encontrado nas localizações padrão; `link.exe` resolvido pertencia ao Git. Rust 1.94.1 e componentes clippy/rustfmt da toolchain específica existem. Proprietário autorizou instalar C++ Build Tools/Windows SDK; bootstrapper Microsoft com assinatura `Valid` verificada, instalação iniciada, **resultado ainda pendente**. Nenhum build novo é declarado aprovado.
-- Referência Maestri: instalador 0.25.2 inventariado sem executar/alterar; análise limitada por termos oficiais a metadados/documentação/uso normal. `docs/ANALISE_MAESTRI.md` e `docs/PARIDADE_MAESTRI.md`. Sem alegação de framework ou paridade não comprovada.
-- Remoto autorizado: `https://github.com/kauankelvin7/Ciranda.git`, inicialmente sem branches; `origin` configurado. Publicação somente de fonte revisada e resumos sanitizados, com caches/executáveis/bancos/logs privados ignorados. Nenhum push é alegado até confirmação da operação Git.
+| Responsável | Entrega observada | Situação |
+|---|---|---|
+| REGENTE | Plano, arquitetura, SESSION_API v1, contratos, governança, revisão e drivers UI | Integração serial; origin/main recebeu 40d41ae |
+| JARDINEIRO | Canvas React/xterm: pan/zoom, nós, resize, conexões context_reference, grupos e layout v1 | Fonte 7bcbdb6; correções 7b3bea3/1ef96d7 em revisão |
+| FERREIRO | Nove comandos SESSION_API, portable-pty/ConPTY, limites, Job Object e SQLite | Fonte inicial f4a8320; correções em revisão, sem compilação/testes do backend |
+| SENTINELA | Papel temporário do JARDINEIRO: revisão somente leitura do backend | Confirmou API Rust instável e corrida no estado de saída; nenhum quarto agente |
 
-O que falta para chamar de MVP executável: integrar entregas revisadas, compilar Tauri no ambiente preparado e executar smoke real (abrir app, criar terminal, comando real/saída, encerrar e reabrir layout). Preview de navegador e unit tests não substituem esse teste.
-
-## Entrega atual
-
-- Baseline recebido preservado no commit `2bf65b2`.
-- REGENTE: branch `codex/gc00-foundation`, checkout principal; documentação, tarefas, versões npm fixadas, lockfiles npm/Rust, lint e definição CI Windows.
-- FERREIRO: branch `codex/gc00-verification`, `.worktrees/ferreiro`; política mediada, licenças de assets, catálogo de 12 contratos/66 provas, runner e gates fail-closed, sob revisão.
-- SENTINELA: revisão histórica independente concluída por JARDINEIRO em `e76934e`, complemento `bdae97e`; hashes de cinco saídas e os logs da revalidação FERREIRO conferidos. Os 8 testes de governança passaram em `54df078`; não validam automaticamente commits posteriores.
-- Maestri configurado nesta sessão: REGENTE conectado a FERREIRO e JARDINEIRO; presets Codex e Antigravity listados com Maestro off. Detalhes e erros em `docs/MAESTRI.md`.
-- FERREIRO reutilizado em sua worktree, Codex 0.163.0 via executável absoluto com `--approve-for-me`; identidade/branch/AGENTS confirmados. Revalidação GC-00 registrou `blocked`: subprocessos Node/Git retornam `EPERM`; alternativa com isolamento de testes desativado teve 5/8 pass e 3 falhas. Evidência diagnóstica em `.worktrees/ferreiro/proofs/maestri-ferreiro/revalidation.json`, sem alteração de implementação e sem prova contratual aprovada.
-- JARDINEIRO: revisão GC-00 na antiga `.worktrees/jardineiro` concluída e preservada. Terminal reutilizado para a nova worktree acima; autoaprovação do Antigravity foi autorizada pelo proprietário, sem alteração do preset global. GC-04 continua sem liberação contratual, com implementação agora explicitamente autorizada.
+Codex/Antigravity funcionam como trabalhadores externos no Maestri. **Adaptadores dentro do CIRANDA ainda não demonstrados.** Worktrees antigas e provas preservadas.
 
 ## Verificações reais
 
-| Verificação | Resultado observado | Limite |
+| Verificação | Resultado | Alcance |
 |---|---|---|
-| npm install local | exit 0; 122 pacotes auditados | Primeira resolução, não instalação limpa do produto completo |
-| Lint, tipos, build frontend | exit 0 em cada etapa | Não executa Tauri/PTY |
-| npm audit | exit 0; zero vulnerabilidades reportadas | Não comprova licenças legais ou Rust |
-| cargo generate-lockfile | exit 0; 407 pacotes resolvidos | Sem compilação |
-| cargo build --locked, um job | exit 101 | MSVC `link.exe` não encontrado |
-| cargo fmt --check | exit 1 | Componente rustfmt ausente |
-| Testes governança FERREIRO corrigidos | 8 passaram em 083d7c8 | Aguardando revisão e reexecução integrada |
-| CI remota | NÃO EXECUTADA | Workflow definido; nenhum push autorizado |
-| Runtime Windows/instalador | NÃO COMPROVADO | Sem app iniciado ou pacote produzido |
+| Governança no HEAD limpo 40d41ae | 8/8 passaram; LOCAL-GOVERNANCE aprovou | Sem validar runtime desktop |
+| Checker de contratos e gate real de assets | Passaram | 12 contratos/71 provas especificadas; DAG acíclico; não são 71 provas executadas |
+| Canvas 7bcbdb6 limpo | 20 testes, lint, tipos, build, audit e governança exit 0; hashes conferidos | Frontend/modelo/IPC, sem processo real |
+| Canvas após correções P1 | Autor relata 25 testes, tipos/lint exit 0 | Aguardando reexecução integrada |
+| UI navegador, 055d159 limpo | Criar, arrastar, redimensionar, conectar, pan/zoom, salvar e recuperar após reload passaram | tooling/qa-canvas-ui.ps1; localStorage de preview |
+| React/xterm com IPC de teste | Digitação chegou à sessão 1 e depois à sessão 2; ?/Delete não abriram diálogo | tooling/qa-session-ui.ps1; observação inicial dirty, não prova contratual |
+| API hardlinks isolada, Rust 1.94.1 | E0658/E0308 reproduzidos | Defeito real em f4a8320 enviado ao autor; fixture sem linker |
+| cargo test --lib inicial | Exit 101 antes de compilar: portable-pty ausente no cache offline | Nenhum teste Rust/Windows declarado passado |
+| Diagnóstico pareado | Quatro spawns Node/Git falham EPERM no sandbox e passam em execução pontual aprovada | Sem alteração permanente do sandbox/ACL |
+| Instalação MSVC/SDK autorizada | Falhou 0x80070070 / -2147024784, espaço insuficiente | Bootstrapper Microsoft assinado; instalação não concluída |
+| CI remota e smoke Tauri/PTY/SQLite | NÃO EXECUTADOS | Impedem alegar MVP executável ou paridade global |
 
-Registros instrumentados locais: `proofs/runs/<check>.json` e `.output.json`, gerados por `node tooling/check.mjs <check>`; contêm UTC, ambiente, exit, commit, hash e indicadores de árvore limpa/inalterada. Execuções com árvore modificada são diagnósticas. Provas contratuais serão reexecutadas no HEAD limpo após integração revisada. Arquivos gerados não são aceites humanos.
+Provas locais em proofs/mvp-regente/, proofs/LOCAL-GOVERNANCE.* e worktrees dos autores. Registros têm commit, árvore, UTC, saída e SHA-256. Evidência dirty/stale é diagnóstica. Achados em [MVP-INTEGRACAO.md](reviews/MVP-INTEGRACAO.md).
 
-## Provas GC-00
+## Próximos passos
 
-| Prova | Estado contratual |
-|---|---|
-| P-00-01 instalação limpa/build fixado | NÃO COMPROVADA: backend não compila sem MSVC |
-| P-00-02 CI lint/tipos/testes/dependências | NÃO COMPROVADA: workflow definido, execução completa ausente |
-| P-00-03 ação proibida rejeitada/auditada | Parcial: API mediada em revisão; não intercepta shell livre |
-| P-00-04 licença ausente bloqueia pacote | Parcial: gate de assets em revisão; pacote completo permanece proibido |
+- [x] Profissional primeiro registrado no plano, arquitetura, contratos e instruções.
+- [x] Dois trabalhadores reutilizados, worktrees e allowed_paths separados.
+- [x] Entregas recebidas; revisão encontrou defeitos e devolveu correções.
+- [x] Canvas/restore observados em navegador; entrada do componente com IPC de teste.
+- [x] Primeiro push autorizado confirmado; arquivos publicados auditados.
+- [ ] Finalizar correções, revisão e integração somente da fonte adequada.
+- [ ] Concluir MSVC/SDK após liberar espaço; compilar com lock atualizado e testar Windows.
+- [ ] Smoke nativo: abrir, criar terminal, comando real, saída, encerrar e reabrir layout.
 
-## Bloqueios e próxima ação
+**Intervenção humana necessária:** liberar espaço no C: para concluir instalação/build. Após a falha restaram cerca de 370 MB; observação posterior mostrou 1,28 GB. Nenhum arquivo pessoal será removido automaticamente.
 
-1. Concluir revisão independente; integrar somente commits revisados e executar provas finais no HEAD limpo.
-2. MSVC Build Tools e rustfmt não disponíveis no ambiente verificado. Instalação global altera o Windows e está fora do escopo autorizado; não iniciada.
-3. Diagnóstico anterior de indisponibilidade Maestri/Antigravity superado nesta sessão: dois terminais e conexões criados via CLI documentada. Capacidade de revisão do JARDINEIRO ainda não comprovada; falhas de hook do FERREIRO registradas sem alterar configurações globais. Checklist na nota `ciranda-configuracao-dos-t`; tarefas em `tasks/GC00-MAESTRI-SETUP.json`.
-4. Catálogo de modelos das CLIs não comprovado; nenhum modelo específico apresentado como configurado.
-5. Aceite humano do Selo só será solicitado quando houver resultado completo revisável. GC-01..11 continuam sem liberação.
+## Limites e histórico
 
-Não há supervisor contínuo ativo. Recuperação em `docs/RUNBOOK.md`. Último commit atual: `git log -1 --oneline`; evidências registram seu próprio commit, evitando autorreferência falsa.
+O MVP reduzido não conclui GC-02/03: replay configurável, TUI sob carga, crash/backup/import/export, tarefas/notas e auditoria de segredos exigem provas próprias. SQLite de layout não equivale ao sistema completo de recuperação.
 
-Observações instrumentadas da configuração: `proofs/maestri-setup/observation-*.json` e checksums, geradas por `tooling/maestri-evidence.ps1`. São diagnósticos da CLI, com UTC, commit, exit e hash; não são provas contratuais ou aceite humano. Árvore dirty é registrada como tal.
+Revalidação antiga do FERREIRO em 083d7c8: BLOCKED (fallback 5/8 pass, três falhas EPERM), auditada em bdae97e. Governança histórica em 54df078 e build frontend em 69c3ddb não validam commits posteriores.
+
+Referência Maestri: inventário do instalador, documentação pública e uso normal; sem desmontar código ou copiar recursos. Ver [análise](ANALISE_MAESTRI.md) e [matriz](PARIDADE_MAESTRI.md).
+
+Somente fonte revisada e resumos sanitizados seguem para https://github.com/kauankelvin7/Ciranda.git. Caches, executáveis, bancos, worktrees, credenciais e provas brutas ignorados. Sem force-push/deploy. Nenhum supervisor contínuo presumido; recuperação em docs/RUNBOOK.md.
