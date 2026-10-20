@@ -1,6 +1,9 @@
 ﻿node_modules/
 dist/
 target/
+.worktrees/
+.cache/
+proofs/runs/
 .env
 .env.*
 !.env.example

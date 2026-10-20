@@ -1,0 +1,41 @@
+name: Verify CIRANDA
+on: [workflow_dispatch, pull_request]
+permissions:
+  contents: read
+jobs:
+  foundation:
+    runs-on: windows-latest
+    env:
+      CARGO_HOME: ${{ github.workspace }}/.cache/cargo
+      CARGO_BUILD_JOBS: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.0.2'
+      - name: Pin npm
+        run: npm install --prefix .cache/npm-tool npm@11.19.1 --cache .cache/npm --no-fund
+      - name: Install locked frontend
+        run: node .cache/npm-tool/node_modules/npm/bin/npm-cli.js ci --prefix apps/desktop --cache .cache/npm
+      - name: Lint
+        run: node .cache/npm-tool/node_modules/npm/bin/npm-cli.js --prefix apps/desktop run lint
+      - name: Types
+        run: node .cache/npm-tool/node_modules/npm/bin/npm-cli.js --prefix apps/desktop run typecheck
+      - name: Governance tests
+        run: node --test tests/*.test.mjs
+      - name: Frontend build
+        run: node .cache/npm-tool/node_modules/npm/bin/npm-cli.js --prefix apps/desktop run build
+      - name: Dependency audit
+        run: node .cache/npm-tool/node_modules/npm/bin/npm-cli.js --prefix apps/desktop audit --audit-level=low --cache .cache/npm
+      - name: Rust toolchain
+        run: rustup toolchain install 1.94.1 --profile minimal --component clippy,rustfmt
+      - name: Rust format
+        run: cargo +1.94.1 fmt --manifest-path apps/desktop/src-tauri/Cargo.toml -- --check
+      - name: Rust tests
+        run: cargo +1.94.1 test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - name: Rust lint
+        run: cargo +1.94.1 clippy --locked --manifest-path apps/desktop/src-tauri/Cargo.toml -- -D warnings
+      - name: Rust dependency report
+        run: cargo +1.94.1 tree --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+
+# Definition only: no workflow run, publication or remote push is implied.

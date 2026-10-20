@@ -1,0 +1,9 @@
+{
+  "id": "TASK-001", "contract": "GC-00", "title": "Verificadores de política, licenças e provas", "owner": "FERREIRO",
+  "status": "review", "depends_on": ["TASK-000"], "branch": "codex/gc00-verification", "worktree": ".worktrees/ferreiro",
+  "allowed_paths": ["scripts/", "tests/", "contracts/", "assets/manifest.json"],
+  "acceptance": ["Rejeitar ação proibida e auditar sem executar shell", "Licença ausente nega gate", "Provas com commit/hash e invalidação", "Selo e pacote fail-closed"],
+  "proofs": ["P-00-03", "P-00-04"], "requires_approval": false,
+  "known_issues": ["Revisão independente solicitou reforço dos metadados e destinos de escrita"],
+  "next_action": "Corrigir, testar e obter nova revisão SENTINELA"
+}

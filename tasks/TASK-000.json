@@ -1,0 +1,9 @@
+{
+  "id": "TASK-000", "contract": "GC-00", "title": "Diagnóstico e governança", "owner": "REGENTE",
+  "status": "executing", "depends_on": [], "branch": "codex/gc00-foundation", "worktree": ".",
+  "allowed_paths": ["AGENTS.md", ".agents/", ".gitignore", ".npmrc", ".node-version", "README.md", "docs/", "tasks/", "tooling/", ".github/", "apps/desktop/"],
+  "acceptance": ["Preservar trabalho recebido", "Documentar ferramentas e bloqueios reais", "Executar verificações reproduzíveis", "Não conceder selo sem revisão e aceite"],
+  "proofs": ["P-00-01", "P-00-02"], "requires_approval": false,
+  "known_issues": ["MSVC link.exe ausente", "Maestri/Antigravity indisponíveis nesta sessão", "CI remota não executada"],
+  "next_action": "Concluir revisão independente das ferramentas e registrar estado final"
+}
