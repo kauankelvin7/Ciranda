@@ -2,6 +2,8 @@
 
 Atualizado em 2026-10-20. **Fonte do MVP integrada; runtime Windows ainda não validado. GC-00 bloqueado, nenhum Selo.** Modo Profissional padrão; Fazenda adiada.
 
+Checkpoint publicado na branch `codex/checkpoint-20261020`: [continuação e passos exatos](CHECKPOINT_CONTINUACAO.md). A CI do PR #1 foi retomada no run `39484580459`: frontend, governança, contratos, assets, audit e fmt passaram; na última consulta, Rust tests ainda em execução. Não declarar testes Rust, binário ou smoke aprovados.
+
 ## Entregas e equipe
 
 | Responsável | Resultado observado | Trabalho atual |

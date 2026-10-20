@@ -1,5 +1,7 @@
 # Recuperação da operação
 
+Retomada atual: ler [CHECKPOINT_CONTINUACAO.md](CHECKPOINT_CONTINUACAO.md) e consultar primeiro a CI já iniciada. O checkpoint está em branch separada para não reiniciar a validação do PR.
+
 1. Abrir este repositório; ler AGENTS.md, plano v3, docs/STATUS.md, docs/DECISIONS.md e os contratos.
 2. Conferir `git status --short --branch`, `git log -5 --oneline` e `git worktree list`. Nunca sobrescrever trabalho em andamento.
 3. Ler `tasks/backlog.md` e tarefas estruturadas. Identificar dono, caminhos permitidos, branch e último commit antes de retomar.

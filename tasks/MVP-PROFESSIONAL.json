@@ -2,7 +2,7 @@
   "id": "MVP-PROFESSIONAL",
   "contract": "GC-00",
   "owner": "REGENTE",
-  "status": "executing",
+  "status": "awaiting_ci_result",
   "branch": "codex/professional-first",
   "allowed_paths": [
     "AGENTS.md",
@@ -23,7 +23,8 @@
     ".gitignore",
     ".github/workflows/verify.yml",
     "tooling/",
-    "proofs/mvp-regente/"
+    "proofs/mvp-regente/",
+    "docs/CHECKPOINT_CONTINUACAO.md"
   ],
   "authority": "Proprietario autorizou implementar canvas e PTY agora, em worktrees isoladas, mesmo se ambiente impedir validacao; nao concede Selo nem libera contratos.",
   "workers": [
@@ -116,21 +117,37 @@
       "rust_tests": "not_executed"
     },
     "ci": {
+      "run_id": 39484580459,
+      "job_id": 118841558473,
+      "head": "3b542f856f6386303289f865b5ccda6b496612ec",
+      "status": "in_progress",
+      "conclusion": null,
+      "active_step": "Rust tests",
+      "observed_at_utc": "2026-10-20T19:40:37.952Z",
+      "log_downloaded": false
+    },
+    "backend_icon_independent_review": "44dfb47",
+    "backend_icon_result": "No blocking static findings; not compiled or executed",
+    "delivery_constraint": "Owner requested publishing the current checkpoint. Preserve the existing CI run; checkpoint goes to codex/checkpoint-20261020, with no main update or PR branch update.",
+    "previous_ci": {
       "run_id": 39476973848,
       "job_id": 118815388569,
       "status": "failure",
       "failure": "tauri-build: icons/icon.ico not found, before product tests",
       "log": "proofs/mvp-regente/ci-39476973848-job-118815388569.log",
       "log_sha256": "5bf22b9791a0315b5effa5a7a60716276710edf2fb35a78b19900070865f5225"
-    },
-    "backend_icon_independent_review": "44dfb47",
-    "backend_icon_result": "No blocking static findings; not compiled or executed",
-    "delivery_constraint": "No heavy build/test started. Publish reviewed source only to codex/professional-first; do not update main or open a PR that triggers CI."
+    }
   },
   "owner_authorizations": {
     "msvc_installation": "Authorized explicitly via request_user_input_async; Microsoft-signed bootstrapper; C++ Build Tools and Windows SDK only, no automatic reboot.",
     "remote": "https://github.com/kauankelvin7/Ciranda.git; owner explicitly authorized connecting and pushing reviewed source. No force-push or private runtime artifacts.",
     "publication_scope": "Existing explicit owner authorization permits REGENTE to push reviewed source to the specified remote; workers remain local. No force-push, deployment, binaries or private proofs."
   },
-  "human_seal_approval": null
+  "human_seal_approval": null,
+  "checkpoint": {
+    "path": "docs/CHECKPOINT_CONTINUACAO.md",
+    "branch": "codex/checkpoint-20261020",
+    "source_commit": "3b542f856f6386303289f865b5ccda6b496612ec",
+    "pr": "https://github.com/kauankelvin7/Ciranda/pull/1"
+  }
 }
