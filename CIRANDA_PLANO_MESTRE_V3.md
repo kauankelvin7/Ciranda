@@ -1,4 +1,18 @@
-# CIRANDA — Plano mestre de engenharia e implementação verificável (v3.0)
+# CIRANDA — Plano mestre de engenharia e implementação verificável (v3.1)
+
+> Diretriz definitiva do proprietário em 20/10/2026: **orquestrador profissional primeiro; Fazenda como tema opcional**. Registro vinculante: `docs/DECISOES_ARQUITETURAIS.md`. Esta revisão substitui as prioridades, a apresentação padrão e a exigência de Fazenda no MVP da v3.0; os requisitos de provas e segurança permanecem. O arquivo anterior com sufixo `(1)` foi renomeado; seu conteúdo histórico está preservado no Git.
+
+## Diretriz de execução da v3.1
+
+1. **Fase 1 — núcleo profissional:** interface moderna escura; canvas infinito, pan/zoom, nós arrastáveis/redimensionáveis, criação/exclusão de agentes, conexões funcionais, grupos, atalhos e menus contextuais; sessões/PTY reais, adaptadores e persistência/recuperação. Entrega inicial verificável: abrir o app, criar ao menos um terminal real, executar um comando, ver saída, encerrar a sessão e reabrir o layout. Uma demonstração parcial não equivale ao cumprimento de todos os contratos.
+2. **Fase 2 — orquestração autônoma:** delegação, tarefas/dependências, mensagens, revisão independente e provas. Segurança e consentimento básicos existem desde a Fase 1; não são adiados com a automação.
+3. **Fase 3 — Fazenda opcional:** visualização alternativa do mesmo estado. Não implementar agora nem exigir GC-09 para o MVP profissional. Alternar apresentação não cria, reinicia ou encerra processos, não duplica sessões e não perde dados.
+
+Separação obrigatória: execução/processos; orquestração; persistência/recuperação; modelo do canvas; apresentação/temas. Ciclo de vida pertence ao Rust, nunca a montagem/desmontagem de componentes React. Manter Tauri v2, Rust, React, TypeScript e SQLite.
+
+**Ordem de execução do proprietário:** implementar agora, em paralelo isolado, canvas profissional (JARDINEIRO) e sessões/PTY Windows (FERREIRO), mesmo se o ambiente impedir validação. Esta autorização posterior permite implementação revisável; não libera contratos bloqueados, não concede Selo e não autoriza alegar runtime validado. GC-04 permanece sem liberação contratual até cumprir seus predecessores e provas. Nenhum componente global será instalado sem autorização específica.
+
+As seções de metáfora, elenco temático, arte, XP e Primeira Colheita abaixo são especificações da futura Fase 3. Não definem a interface padrão nem bloqueiam a Fase 1. O detalhamento funcional vigente e a ordem das tarefas estão no registro de arquitetura e no backlog.
 
 > Evolução: Maestro Next → Mutirão → Ciranda · 20/10/2026 · Status: especificação, não implementação · Plataforma inicial: Windows · UI em pt-BR (i18n pronto desde o início)
 > Tagline: **"Cada agente tem seu passo. Você conduz a roda."**
@@ -24,7 +38,7 @@ Ordem de leitura sugerida: seções 1 → 3 → 5 (conceito), 12 (roadmap passo 
 
 ## Resumo executivo da v3
 
-**Ciranda** é o nome de trabalho proposto, sujeito à decisão do proprietário e à verificação de disponibilidade de marca. A metáfora da fazenda permanece, mas a **Roda** representa a coordenação de agentes. Esta versão transforma o planejamento em **12 Grandes Contratos (GC-00 a GC-11)** com entregáveis, provas reproduzíveis, testes negativos, dependências e um **Protocolo do Selo**. Não há alegação de que o software esteja implementado ou de que testes tenham sido executados.
+**Ciranda** é um orquestrador profissional local-first de agentes, com referência funcional no Maestri e identidade própria. O Modo Profissional é padrão; Fazenda é um tema opcional posterior. Os **12 Grandes Contratos (GC-00 a GC-11)** mantêm provas reproduzíveis, testes negativos, dependências e Protocolo do Selo. Nenhuma paridade, implementação ou validação de runtime é inferida do planejamento.
 
 **Prioridade:** provar primeiro PTY, persistência, foco e autorização no Windows; depois implementar orquestração e gamificação. A primeira versão não publica, compra, altera preços nem realiza deploy sem autorização explícita.
 
@@ -32,7 +46,7 @@ Ordem de leitura sugerida: seções 1 → 3 → 5 (conceito), 12 (roadmap passo 
 
 ### 1.1 Conceito
 
-**Ciranda** é um aplicativo desktop original de orquestração visual de agentes de IA (Codex CLI, Antigravity CLI e outros). Em vez de um canvas cinza e técnico, você trabalha em uma **fazenda**: a *Sede* (escritório de madeira onde ficam seus terminais e anotações), a *Lavoura* (onde cada tarefa é uma plantação que cresce), o *Celeiro* (onde as entregas aprovadas são guardadas) e a *Porteira* (onde os agentes pedem sua autorização).
+**Ciranda** é um aplicativo desktop profissional de orquestração visual de agentes de IA (Codex CLI, Antigravity CLI e futuras CLIs), com canvas técnico, terminais reais e interface moderna escura. Agentes, sessões, grupos, tarefas e conexões têm identidade e comportamento no domínio. Fazenda é apenas uma segunda apresentação opcional desses mesmos dados.
 
 "Mutirão" é o trabalho coletivo da tradição rural brasileira: vizinhos que se juntam para fazer, juntos, algo grande demais para um só. É exatamente o que a orquestração multiagente faz.
 
@@ -60,8 +74,8 @@ Ordem de leitura sugerida: seções 1 → 3 → 5 (conceito), 12 (roadmap passo 
 - Nuvem, colaboração remota, mobile, ranking online e economia com dinheiro real.
 - Engenharia reversa do produto de referência (ver 2.2: removida do plano).
 
-### 1.5 Meta do MVP: "Primeira Colheita"
-O app abre, mostra a fazenda com canvas funcional, opera **2 terminais reais**, roda **Codex e Antigravity**, planta **1 tarefa** que cresce, passa pela **Porteira** (aprovação), é **colhida** no Celeiro, o **Caramelo** (mascote) entrega o relatório do dia, e tudo é restaurado após fechar e reabrir.
+### 1.5 Meta do MVP profissional
+O app abre no Modo Profissional, permite pan/zoom, mover/redimensionar nós e criar conexões com semântica explícita; opera ao menos **um terminal real** com entrada/saída e encerramento seguro; salva e recupera o layout. O contrato completo do motor continua exigindo duas sessões independentes. Codex/Antigravity só são apresentados como integrados quando testes reais no CIRANDA os comprovarem. Terminal externo no Maestri não comprova essa integração. Fazenda, Caramelo e XP não são requisitos desse MVP.
 
 ---
 
@@ -106,7 +120,7 @@ Local-first; regras de não presumir flags das CLIs; separação PTY interativo 
 
 **Ciranda** evoca cooperação e coordenação humana sem copiar a identidade de outro aplicativo. "Roda" = agentes ativos; "Selo" = contrato aprovado com provas; "Escritura" = contrato versionado; "Peão de Palha" = simulador determinístico para testes sem consumo de tokens. A denominação não está registrada nem validada junto ao INPI; antes de distribuição pública, consultar marcas, domínio e nomes de pacote. Alternativas a avaliar: **Jandaíra**, **Quintal Vivo** e **Tropeiro**.
 
-## 3. Mapa da metáfora (conceito técnico ↔ fazenda)
+## 3. Mapa da metáfora opcional (Fase 3)
 
 | Conceito técnico | Na fazenda | Observação de UX |
 |---|---|---|
@@ -162,7 +176,7 @@ Cachorro caramelo (vira-lata). Funções: (1) relatório "enquanto você estava 
 
 ---
 
-## 5. Gamificação saudável
+## 5. Gamificação saudável — opcional, Fase 3, fora do MVP profissional
 
 ### 5.1 Princípios
 1. **Só cosmético desbloqueia por XP.** Nenhuma função fica trancada.
@@ -289,7 +303,9 @@ Referência: documentação pública do Maestri **[VERIFICAR]**. Prioridades: P0
 
 ## 7. UX e direção de arte
 
-### 7.1 Estilo **[DECISÃO SUA — D2]**
+### 7.1 Estilo padrão profissional e tema opcional
+
+Decisão do proprietário: canvas técnico moderno e escuro é padrão. Molduras temáticas, sprites, pixel art e zonas rurais só pertencem ao tema Fazenda opcional da Fase 3. A escolha de arte da Fazenda permanece pendente e não afeta o núcleo. O esboço temático da seção 7.4 é exclusivo dessa visualização futura.
 Recomendação: **pixel art 16×16**, paleta terrosa, moldura de madeira. Motivo: grande oferta de assets CC0 e baratos, coerência fácil, leve para renderizar. Contra-argumento: texto de terminal e UI densa conflitam com estética retrô se mal executado; por isso o terminal e a tipografia de leitura seguem modernos. O que mudaria a conclusão: se você preferir arte própria ou ilustração vetorial limpa, o sistema de tokens abaixo permite trocar sem refatorar.
 
 ### 7.2 Tokens de tema (CSS variables)
@@ -406,7 +422,7 @@ Recomendação D3: **começar em CSS/DOM** (menos dependências, mais simples) e
 ### 8.3 Regras arquiteturais
 1. **UI não executa shell.** Tudo passa por comandos Tauri validados.
 2. **Event sourcing leve:** tabela `events` *append-only* é a fonte da verdade para timeline, relatório, XP e animações; `tasks`/`sessions` são estado materializado.
-3. **A camada de jogo é pura projeção:** `projectFarm(events, state) → sceneState` (função pura, testável sem renderizar). Remover o jogo não altera o domínio.
+3. **Apresentações são projeções:** Modo Profissional é padrão; Fazenda opcional usa `projectFarm(events, state) → sceneState`. Ambas compartilham os mesmos IDs, sessões, tarefas e eventos. Trocar apresentação não chama spawn, terminate, reset ou migração de estado. A UI nunca possui o ciclo de vida dos processos.
 4. Cada sessão: `session_id`, `workspace_id`, `task_id?`, `cwd`, `pid`, estado, política de permissões.
 5. Cada tarefa: `task_id`, responsável, dependências, branch/worktree, artefatos, critérios de aceite, tentativas, logs.
 6. Eventos tipados: `task.created|started|blocked|completed|failed|interrupted`, `approval.requested|granted|denied`, `terminal.activity|exited` (atividade agregada, sem conteúdo bruto), `agent.status_changed`, `message.proposed|delivered|rejected`.
@@ -613,7 +629,7 @@ Mensagens de agentes, conteúdo de arquivos e saída de ferramentas são **dados
 
 Cada Grande Contrato possui `id`, versão, dono, dependências, arquivos permitidos, requisitos cobertos, riscos, entregáveis, provas e status (`draft → ready → executing → review → proven → sealed`, com `blocked` e `failed`). `proven` significa que o executor automatizado verificou as provas; `sealed` exige revisão independente e aprovação humana. Um contrato bloqueado não libera sucessores.
 
-**Grafo de dependências:** GC-00 → GC-01 → {GC-02, GC-03}; {GC-02, GC-03} → GC-04 e GC-05; {GC-03, GC-05} → GC-06; {GC-03, GC-06} → GC-07; {GC-06, GC-07} → GC-08; {GC-04, GC-07} → GC-09; {GC-04, GC-07} → GC-10; todos os contratos necessários ao release → GC-11. O MVP exige GC-00 a GC-07, núcleo do GC-09 e jornada MVP do GC-11; GC-08 e GC-10 podem ficar para pós-MVP.
+**Dependências de liberação:** GC-00 → GC-01 → {GC-02, GC-03}; {GC-02, GC-03} → GC-04 e GC-05; {GC-03, GC-05} → GC-06; {GC-03, GC-06} → GC-07; {GC-06, GC-07} → GC-08; {GC-04, GC-07} → GC-09/10. GC-11 valida o escopo do release. A Fase 1 prioriza núcleo profissional e segurança básica; Fase 2 amplia orquestração; GC-09 é apenas Fase 3 e **não é dependência do release profissional**. A autorização posterior do proprietário permite implementar partes independentes de GC-02/03/04 agora, mas nenhum bloqueio ou falta de prova será convertido em contrato aprovado.
 
 ### 12.2 Catálogo e provas
 
@@ -807,7 +823,7 @@ Cada Grande Contrato possui `id`, versão, dono, dependências, arquivos permiti
 **Provas obrigatórias:**
 
 - `P-11-01` — Instalação e desinstalação em Windows limpo.
-- `P-11-02` — E2E Primeira Colheita passa de ponta a ponta.
+- `P-11-02` — E2E profissional: abrir CIRANDA, criar terminal, executar comando real, visualizar saída, encerrar sessão e reabrir layout. Fazenda não é exigida.
 - `P-11-03` — Restauração de backup é demonstrada.
 - `P-11-04` — Contraste, navegação e leitor de tela auditados.
 - `P-11-05` — Inventário SBOM e licenças anexados.
@@ -929,8 +945,8 @@ Pare quando uma decisão de produto ou segurança exigir o proprietário.
 | D1 | Nome Ciranda | Adotar provisoriamente; verificar INPI | Pendente |
 | D2 | Arte pixel 16×16 | Sim, sem prejudicar legibilidade | Pendente |
 | D3 | CSS sprites ou PixiJS | CSS primeiro; medir antes de migrar | Pendente |
-| D4 | Zonas rígidas ou canvas livre | Oferecer ambos | Pendente |
-| D5 | SQLite no Rust | Sim | Pendente |
+| D4 | Interface principal | Modo Profissional padrão; Fazenda opcional sobre o mesmo estado | Decidido pelo proprietário em 20/10/2026 |
+| D5 | SQLite no Rust | Manter Tauri v2, Rust, React, TypeScript e SQLite | Confirmado pelo proprietário em 20/10/2026 |
 | D6 | Concorrência inicial | Máximo 2 sessões de agente | Pendente |
 | D7 | Análise de concorrente | Somente fontes públicas e uso autorizado | Pendente |
 | D8 | Assets | Arte própria e CC0/OFL | Pendente |

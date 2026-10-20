@@ -1,0 +1,31 @@
+{
+  "id": "MVP-PROFESSIONAL",
+  "contract": "GC-00",
+  "owner": "REGENTE",
+  "status": "executing",
+  "branch": "codex/professional-first",
+  "allowed_paths": ["AGENTS.md", ".agents/", "CIRANDA_PLANO_MESTRE_V3.md", "docs/DECISOES_ARQUITETURAIS.md", "docs/SESSION_API.md", "docs/DECISIONS.md", "docs/STATUS.md", "docs/RUNBOOK.md", "README.md", "contracts/", "tasks/backlog.md", "tasks/MVP-PROFESSIONAL.json", "tasks/GC00-MAESTRI-SETUP.json", ".gitignore", ".github/workflows/verify.yml", "tooling/", "proofs/mvp-regente/"],
+  "authority": "Proprietario autorizou implementar canvas e PTY agora, em worktrees isoladas, mesmo se ambiente impedir validacao; nao concede Selo nem libera contratos.",
+  "workers": [
+    {
+      "id": "MVP-PTY",
+      "owner": "FERREIRO",
+      "branch": "codex/mvp-pty-windows",
+      "worktree": ".worktrees/ferreiro-profissional",
+      "status": "queued",
+      "allowed_paths": ["apps/desktop/src-tauri/", "tasks/MVP-PTY.json", "proofs/mvp-pty/", "docs/PTY_IMPLEMENTATION.md"],
+      "acceptance": ["Seguir exatamente docs/SESSION_API.md", "PTY Windows real com input/output/resize limitados e sessoes independentes", "Backend valida caminhos no workspace e recusa escapes/links/ADS/UNC", "Fechar sessao/app encerra arvore com Job Object; UI desmontada nao mata processo", "SQLite persistente para layout, com recuperacao segura e sem falsa retomada de processo", "Testes positivos/negativos e evidencias com commit/UTC/hash/exits; bloqueio ambiental separado de falha de produto", "Nao instalar globalmente, desativar sandbox, iniciar Fazenda ou alegar validacao sem executar", "Entregar commit revisavel e retornar via maestri ask REGENTE"]
+    },
+    {
+      "id": "MVP-CANVAS",
+      "owner": "JARDINEIRO",
+      "branch": "codex/mvp-professional-canvas",
+      "worktree": ".worktrees/jardineiro-profissional",
+      "status": "queued",
+      "allowed_paths": ["apps/desktop/src/", "apps/desktop/tests/", "apps/desktop/package.json", "apps/desktop/package-lock.json", "apps/desktop/index.html", "apps/desktop/eslint.config.mjs", "apps/desktop/tsconfig.json", "apps/desktop/vite.config.ts", "docs/ARCHITECTURE.md", "docs/TRACEABILITY.md", "docs/CANVAS_IMPLEMENTATION.md", "tasks/MVP-CANVAS.json", "proofs/mvp-canvas/"],
+      "acceptance": ["Modo Profissional escuro padrao; nenhuma Fazenda", "Canvas com pan/zoom, nos arrastaveis/redimensionaveis, conexoes context_reference funcionais, grupos e exclusao explicita", "Persistir/restaurar layout v1; rejeitar referencias invalidas e nao executar texto por conexao", "Terminal xterm real via contrato docs/SESSION_API.md, sem saida simulada; preview do navegador sem runtime claramente indicado", "Processo pertence ao Rust; montar/desmontar componente nao cria/fecha sessao", "Teclado, foco visivel e menus contextuais; atualizar rastreabilidade de acessibilidade", "Testes reais de interacoes/modelo/persistencia, lint/tipos/build e evidencias com commit/UTC/hash/exits", "Dependencias apenas locais e fixadas, sem instalacao global/publicacao", "Entregar commit revisavel e retornar via maestri ask REGENTE"]
+    }
+  ],
+  "acceptance": ["Decisao definitiva incorporada ao plano e contratos", "Investigar MSVC/PATH e EPERM sem desativar sandbox ou instalar globalmente", "Integrar entregas revisadas sem disputar arquivos", "Smoke real: abrir CIRANDA, criar terminal, executar comando real, ver saida, encerrar sessao, reabrir layout", "Nenhuma alegacao de MVP executavel antes do smoke passar"],
+  "human_seal_approval": null
+}
