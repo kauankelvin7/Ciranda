@@ -32,7 +32,10 @@ try {
       case 'session_create':{const s={id:'mock-session-'+(++qa.nextId),cwd:'.',state:'running',cols:args.cols,rows:args.rows};qa.sessions.push(s);await new Promise(r=>setTimeout(r,60));return s;}
       case 'session_write':qa.writes.push({...args});return;
       case 'session_resize':return;
-      case 'session_read':return {sessionId:args.sessionId,chunks:[],state:qa.sessions.find(s=>s.id===args.sessionId)?.state??'closed',truncated:false};
+      case 'session_read':{
+        if(qa.drainSteps?.length)return {sessionId:args.sessionId,...qa.drainSteps.shift()};
+        return {sessionId:args.sessionId,chunks:[],state:qa.sessions.find(s=>s.id===args.sessionId)?.state??'closed',truncated:false};
+      }
       case 'session_close':{if(qa.failClose)throw Error('synthetic close rejection');const s=qa.sessions.find(s=>s.id===args.sessionId);if(s)s.state='closed';return;}
       case 'workspace_save':qa.saved=args.layoutJson;return;
       default:throw Error('Unexpected mock command '+command);
@@ -76,11 +79,27 @@ try {
   if(!second.length||second.some(w=>w.sessionId!=='mock-session-2'))throw Error('Listener retained previous session');
   if(!second.map(w=>w.data).join('').includes('CIRANDA-QA-TWO'))throw Error('Second input missing');
   qa.failClose=true;const count=document.querySelectorAll('article').length;
+  document.querySelector('button.close-session').click();await new Promise(r=>setTimeout(r,100));
+  if(!document.querySelector('.node-error-banner')?.textContent.includes('synthetic close rejection'))throw Error('Stop failure not visible');
   document.querySelector('button.node-action-btn.delete').click();await new Promise(r=>setTimeout(r,100));
   document.querySelector('.dialog-btn.danger').click();await new Promise(r=>setTimeout(r,150));
   if(document.querySelectorAll('article').length!==count)throw Error('Node removed after close rejected');
   if(!document.querySelector('[role=alert]')?.textContent.includes('synthetic close rejection'))throw Error('Close failure not visible');
-  return {second_session_writes:second.length,destinations:[...new Set(qa.writes.map(w=>w.sessionId))],close_rejection_preserved_node:true,native_runtime_validated:false};
+  document.querySelector('.dialog-btn.cancel').click();await new Promise(r=>setTimeout(r,60));
+  qa.failClose=false;
+  const bytes=(s)=>[...new TextEncoder().encode(s)];
+  qa.drainSteps=[
+    {chunks:[{seq:1,data:bytes('CIRANDA_UI_FIRST_CHUNK\r\n')}],state:'exited',truncated:false},
+    {chunks:[{seq:2,data:bytes('CIRANDA_UI_FINAL_CHUNK\r\n')}],state:'exited',truncated:false},
+    {chunks:[],state:'exited',truncated:false}
+  ];
+  qa.sessions.find(s=>s.id==='mock-session-2').state='exited';
+  await new Promise(r=>setTimeout(r,450));
+  if(qa.drainSteps.length)throw Error('Exited output was not drained');
+  const reads=qa.calls.filter(c=>c.command==='session_read'&&c.args.sessionId==='mock-session-2');
+  if(!reads.some(c=>c.args.afterSeq===2))throw Error('Final sequence was not consumed');
+  if(!document.querySelector('.node-status-badge.exited'))throw Error('Final state not displayed after drain');
+  return {second_session_writes:second.length,destinations:[...new Set(qa.writes.map(w=>w.sessionId))],close_rejection_preserved_node:true,final_output_drained:true,native_runtime_validated:false};
 })()
 '@ | Out-Null
 } catch { $failure=$_.Exception.Message }

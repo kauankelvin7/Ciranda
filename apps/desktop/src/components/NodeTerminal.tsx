@@ -139,6 +139,7 @@ export const NodeTerminal: React.FC<NodeTerminalProps> = ({
       if (backend.isNative && curSessionId && curState === 'running') {
         backend.writeSession(curSessionId, data).catch((err) => {
           console.error('Falha ao enviar dados para a sessão:', err);
+          setErrorBanner(`Falha ao enviar entrada ao terminal: ${err instanceof Error ? err.message : String(err)}`);
         });
       }
     });
@@ -208,6 +209,7 @@ export const NodeTerminal: React.FC<NodeTerminalProps> = ({
         onAnnounce(`Sessão ${activeSessionId} encerrada.`);
       } catch (err) {
         console.error('Erro ao encerrar sessão:', err);
+        setErrorBanner(`Não foi possível encerrar a sessão: ${err instanceof Error ? err.message : String(err)}`);
       }
     }
   }, [backend, activeSessionId, onAnnounce]);
@@ -229,6 +231,10 @@ export const NodeTerminal: React.FC<NodeTerminalProps> = ({
       try {
         const result = await backend.readSession(activeSessionId, lastSeqRef.current);
         if (!isMounted) return;
+
+        if (result.truncated) {
+          setErrorBanner('O buffer de saída atingiu o limite; parte da saída anterior não está mais disponível.');
+        }
 
         const hasChunks = Boolean(result.chunks && result.chunks.length > 0);
         if (hasChunks) {
