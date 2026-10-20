@@ -1,0 +1,58 @@
+{
+  "id": "MVP-PTY",
+  "owner": "FERREIRO",
+  "branch": "codex/mvp-pty-windows",
+  "base": "103d63263edb076e2ba45342a816e42f20ad500d",
+  "contract_parts": ["GC-02", "GC-03"],
+  "status": "implemented_validation_blocked_review_pending",
+  "implementation_commit": "824cff3",
+  "integration_review": "REGENTE and temporary SENTINELA reviewed the corrected source; copied only source/docs/task, excluding raw proofs and local Cargo cache. Windows build/test and contract acceptance remain pending.",
+  "evidence_file": "proofs/mvp-pty/validation.json",
+  "allowed_paths": [
+    "apps/desktop/src-tauri/",
+    "tasks/MVP-PTY.json",
+    "proofs/mvp-pty/",
+    "docs/PTY_IMPLEMENTATION.md"
+  ],
+  "authority": "Proprietario autorizou implementar sessoes e PTY Windows mesmo com validacao ambiental bloqueada; nao libera contratos nem Selo.",
+  "api_source": "docs/SESSION_API.md (v1; mantida pelo REGENTE)",
+  "acceptance": [
+    "Implementar exatamente workspace_info, session_create, session_list, session_write, session_resize, session_read, session_close, workspace_load e workspace_save.",
+    "Usar portable-pty com ConPTY no Windows; nao executar texto de usuario ao criar a sessao.",
+    "Validar root/cwd no backend e recusar escape, caminho absoluto, UNC/dispositivo, ADS, nome reservado e componente reparse/symlink/junction.",
+    "Limitar input, fila de entrada (64 KiB incluindo escrita em curso), dimensoes, sessoes, replay e ring buffer; manter sequencias por chunk monotonicamente crescentes e estados running/exited/closed/failed.",
+    "Executar write_all/flush em worker por sessao, fora do mutex global; rejeitar fila cheia e provar por teste que consumidor bloqueado nao impede enfileirar/fechar a fila.",
+    "Coordenar EOF/BrokenPipe do leitor com try_wait antes de marcar failed; testar no Windows que saida normal do PowerShell resulta em exited.",
+    "Anexar o PowerShell a Windows Job Object com KILL_ON_JOB_CLOSE; session_close e shutdown encerram a arvore; desmontagem de UI nao controla processos.",
+    "Persistir layout v1 em .ciranda/state.sqlite com validacao, transacao e recusa de banco em symlink/reparse/hard link; nunca restaurar processo morto como running.",
+    "Incluir testes positivos e negativos reproduziveis, registrar ambiente, UTC, commit, hashes, comando, saida e exit code; distinguir falha de ambiente de falha do produto.",
+    "Documentar que validacao de cwd e Job Object nao fornecem sandbox de SO para comandos interativos do shell.",
+    "Nao instalar globalmente, desativar protecoes, publicar, iniciar Fazenda, modificar SESSION_API ou alegar Selo.",
+    "Commit local revisavel e retorno via maestri ask REGENTE depois de maestri list."
+  ],
+  "limits": {
+    "active_sessions": 16,
+    "retained_session_records": 64,
+    "cols": {"min": 1, "max": 500},
+    "rows": {"min": 1, "max": 300},
+    "input_bytes_per_write": 16384,
+    "queued_input_bytes_per_session": 65536,
+    "pty_read_chunk_bytes": 4096,
+    "output_ring_bytes_per_session": 1048576,
+    "read_bytes_per_call": 65536,
+    "read_chunks_per_call": 64,
+    "layout_json_bytes": 1048576,
+    "layout_nodes": 256,
+    "layout_edges": 1024,
+    "layout_groups": 128
+  },
+  "validation": {
+    "status": "blocked_environment",
+    "tests": "No tests executed. An earlier cargo test --lib exited 101 before compilation because portable-pty was missing from the offline local index; after lock resolution, full crate build/test, hard-link integration, blocked-consumer queue test, normal PowerShell exit test, and PTY smoke were not run per owner instruction to avoid large builds/downloads after MSVC/SDK setup failed with 0x80070070. C: had 1368096768 bytes free at 2026-10-20T15:31:38Z. Source tests are not validation until run.",
+    "format": "rustup run 1.94.1-x86_64-pc-windows-msvc cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml -- --check passed; see proofs/mvp-pty/rustfmt-final-check.log",
+    "cargo_lock": "Generated from the official crates.io sparse registry with cargo generate-lockfile and stored; cargo metadata --locked --offline --no-deps passed; see proofs/mvp-pty/cargo-metadata-locked-final.log. No dependency build/test was started.",
+    "review_findings": "Owner-provided rustc 1.94.1 --emit=metadata proof confirms MetadataExt::number_of_links is experimental and Option<u32>; the Windows implementation now uses CreateFileW(FILE_FLAG_OPEN_REPARSE_POINT) plus GetFileInformationByHandle and the existing SQLite hard-link test. windows-sys 0.59.0 CreateJobObjectW signature uses SECURITY_ATTRIBUTES; Win32_Security is enabled. Reader EOF/BrokenPipe now reconciles try_wait for up to one second; a Windows normal-exit test was added.",
+    "environment_blocker": "Cargo/rustc/rustfmt 1.94.1-x86_64-pc-windows-msvc are available. The owner-reported MSVC/SDK installer failed with 0x80070070 (disk full); no large build/download was attempted per instruction. Do not claim compile, runtime, smoke or Selo. No global install or sandbox change was performed.",
+    "human_seal_approval": null
+  }
+}

@@ -25,7 +25,7 @@ const cargo = process.platform === 'win32' ? path.join(process.env.USERPROFILE, 
 const env = { ...process.env, CARGO_HOME: path.join(root, '.cache/cargo'), CARGO_BUILD_JOBS: '1', npm_config_cache: path.join(root, '.cache/npm') };
 if (process.platform === 'win32') env.PATH = `${path.dirname(cargo)};${env.PATH}`;
 const npm = (...args) => [process.execPath, [npmCli, '--prefix', 'apps/desktop', ...args]];
-const rust = (...args) => [cargo, [...args, '--manifest-path', 'apps/desktop/src-tauri/Cargo.toml']];
+const rust = (...args) => [cargo, ['+1.94.1', ...args, '--manifest-path', 'apps/desktop/src-tauri/Cargo.toml']];
 const checks = {
   'clean-frontend': npm('ci'),
   lint: npm('run', 'lint'),
@@ -35,8 +35,8 @@ const checks = {
   audit: npm('audit', '--audit-level=low'),
   'rust-build': rust('build', '--locked'),
   'rust-tests': rust('test', '--locked'),
-  'rust-lint': [cargo, ['clippy', '--locked', '--manifest-path', 'apps/desktop/src-tauri/Cargo.toml', '--', '-D', 'warnings']],
-  'rust-fmt': [cargo, ['fmt', '--manifest-path', 'apps/desktop/src-tauri/Cargo.toml', '--', '--check']],
+  'rust-lint': [cargo, ['+1.94.1', 'clippy', '--locked', '--manifest-path', 'apps/desktop/src-tauri/Cargo.toml', '--', '-D', 'warnings']],
+  'rust-fmt': [cargo, ['+1.94.1', 'fmt', '--manifest-path', 'apps/desktop/src-tauri/Cargo.toml', '--', '--check']],
   'rust-tree': rust('tree', '--locked'),
   'codex-help': ['codex', ['--help']],
   'codex-exec-help': ['codex', ['exec', '--help']],

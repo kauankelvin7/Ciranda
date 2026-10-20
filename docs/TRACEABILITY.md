@@ -58,5 +58,4 @@ Em conformidade com a autorização DA-002 do proprietário e as diretrizes de a
 | **Região de Anúncios ARIA** | Elemento `aria-live="polite"` invisível (`sr-only`) anunciando criação de nós, conexões, atualizações de status e salvamento de layout para leitores de tela. | `apps/desktop/src/components/Canvas.tsx` |
 | **Papeis e Rótulos Semânticos** | Atributos `role="application"`, `role="toolbar"`, `role="region"`, `role="dialog"`, `role="menu"` e `aria-label` descritivos em todos os componentes interativos. | Todos os componentes em `apps/desktop/src/components/` |
 | **Conexões Semânticas (F06)** | Conexões `context_reference` associativas para inspeção visual sem execução arbitrária, com inspetor acessível `ContextInspector`. | `apps/desktop/src/components/ContextInspector.tsx` |
-| **Modo Profissional Escuro** | Paleta com contraste superior a 4.5:1 para texto normal e 3:1 para controles e bordas, sem componentes rurais/Fazenda. | `apps/desktop/src/styles.css` |
-
+| **Modo Profissional Escuro** | Paleta escura e foco visível implementados; relações de contraste e auditoria WCAG AA ainda exigem medição. | `apps/desktop/src/styles.css` |
