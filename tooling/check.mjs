@@ -40,13 +40,26 @@ const checks = {
   'codex-help': ['codex', ['--help']],
   'codex-exec-help': ['codex', ['exec', '--help']],
 };
-if (!checks[selection] || process.argv.length !== 3) {
+if (!Object.hasOwn(checks, selection) || process.argv.length !== 3) {
   console.error(`Choose one: ${Object.keys(checks).join(', ')}`);
   process.exit(2);
 }
 const git = (...args) => spawnSync('git', args, { cwd: root, encoding: 'utf8', shell: false }).stdout?.trim() ?? '';
+const snapshot = () => {
+  const files = [...new Set(git('ls-files', '-z', '--cached', '--others', '--exclude-standard').split('\0').filter(Boolean))]
+    .filter(file => !file.startsWith('proofs/')).sort();
+  const hash = createHash('sha256');
+  for (const file of files) {
+    hash.update(`${file}\0`);
+    const target = safeFile(file);
+    hash.update(existsSync(target) ? readFileSync(target) : '<missing>');
+    hash.update('\0');
+  }
+  return hash.digest('hex');
+};
 const commit = git('rev-parse', 'HEAD');
 const dirty = git('status', '--porcelain', '--untracked-files=all');
+const sourceHash = snapshot();
 const started = new Date().toISOString();
 const [exe, args] = checks[selection];
 safeFile('proofs/runs');
@@ -65,11 +78,12 @@ for (const file of ['apps/desktop/package-lock.json', 'apps/desktop/src-tauri/Ca
 const record = {
   check: selection, status: result.status === 0 && !result.error ? 'pass' : 'failed', exit_code: result.status,
   started_at_utc: started, finished_at_utc: new Date().toISOString(), commit,
-  source_clean_at_start: dirty === '', source_unchanged: git('rev-parse', 'HEAD') === commit && git('status', '--porcelain', '--untracked-files=all') === dirty,
+  source_clean_at_start: dirty === '', source_sha256: sourceHash,
+  source_unchanged: git('rev-parse', 'HEAD') === commit && snapshot() === sourceHash,
   environment: { os: os.type(), release: os.release(), arch: os.arch(), node: process.version },
   command: [exe, ...args], artifact: artifactName,
   artifact_sha256: createHash('sha256').update(artifact).digest('hex'), lockfiles: hashes,
-  scope: 'Local check only; not a contract proof, CI run, human approval or runtime validation.',
+  scope: 'Local check only; not a contract proof, CI run, human approval or runtime validation. Source hash covers tracked and unignored files excluding proofs; dependency caches and build outputs are excluded.',
 };
 writeFileSync(safeFile(`proofs/runs/${selection}.json`), JSON.stringify(record, null, 2) + '\n');
 console.log(`${selection}: ${record.status}; exit=${record.exit_code}; source_clean=${record.source_clean_at_start}; ${artifactName}`);
