@@ -1,0 +1,586 @@
+{
+  "version": 1,
+  "source": "CIRANDA_PLANO_MESTRE_V3 (1).md",
+  "release_scope": "MVP; GC-08 and GC-10 deferred, never implicitly sealed",
+  "contracts": [
+    {
+      "id": "GC-00",
+      "version": 1,
+      "title": "Fundação e governança",
+      "owner": "REGENTE",
+      "status": "blocked",
+      "depends_on": [],
+      "allowed_paths": [
+        "scripts/",
+        "tests/",
+        "contracts/",
+        "docs/",
+        "assets/manifest.json",
+        ".github/",
+        "apps/desktop/"
+      ],
+      "scope": "Repositório, arquitetura, CI, matriz de requisitos, ADRs, política de licenças e decisões pendentes.",
+      "invariant": "Sem build reprodutível e política de autorização, nenhum contrato de execução começa.",
+      "requirements_status": "not_implemented",
+      "risks": [
+        "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
+      ],
+      "proofs": [
+        {
+          "id": "P-00-01",
+          "criterion": "Instalação limpa reproduz build com versões fixadas.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-00-02",
+          "criterion": "CI executa lint, tipos, testes e análise de dependências.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-00-03",
+          "criterion": "Ação proibida (push/deploy/compra) é rejeitada e auditada.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-00-04",
+          "criterion": "Licença ausente bloqueia empacotamento.",
+          "status": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "GC-01",
+      "version": 1,
+      "title": "Spikes e orçamento técnico",
+      "owner": "unassigned",
+      "status": "draft",
+      "depends_on": [
+        "GC-00"
+      ],
+      "allowed_paths": [],
+      "scope": "Prototipar Tauri/WebView2, PTY/ConPTY, WebGL, foco e limites de RAM/CPU; documentar alternativas.",
+      "invariant": "Nenhum limite de desempenho é considerado validado sem máquina, amostra e metodologia.",
+      "requirements_status": "not_implemented",
+      "risks": [
+        "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
+      ],
+      "proofs": [
+        {
+          "id": "P-01-01",
+          "criterion": "PoC inicia no Windows suportado e registra versões.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-01-02",
+          "criterion": "Benchmark com 2, 10 e 30 nós gera métricas reproduzíveis.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-01-03",
+          "criterion": "Perda de contexto WebGL degrada para renderer seguro.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-01-04",
+          "criterion": "Teste com máquina fraca documenta limites e modo Escritório.",
+          "status": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "GC-02",
+      "version": 1,
+      "title": "Motor de terminal",
+      "owner": "unassigned",
+      "status": "draft",
+      "depends_on": [
+        "GC-01"
+      ],
+      "allowed_paths": [],
+      "scope": "Sessões PTY, entrada/saída, ANSI, resize, batching, backpressure, ring buffer e limpeza de processos.",
+      "invariant": "Desmontar terminal visual não mata a sessão; nenhuma sessão órfã após encerramento controlado.",
+      "requirements_status": "not_implemented",
+      "risks": [
+        "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
+      ],
+      "proofs": [
+        {
+          "id": "P-02-01",
+          "criterion": "Dois shells independentes aceitam entrada simultânea.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-02-02",
+          "criterion": "Saída ANSI longa mantém ordem sem travar UI.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-02-03",
+          "criterion": "Resize rápido não quebra TUI de teste.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-02-04",
+          "criterion": "Backpressure impede crescimento ilimitado.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-02-05",
+          "criterion": "Replay restaura N linhas configuradas.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-02-06",
+          "criterion": "Encerramento mata árvore de processos de teste.",
+          "status": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "GC-03",
+      "version": 1,
+      "title": "Persistência e recuperação",
+      "owner": "unassigned",
+      "status": "draft",
+      "depends_on": [
+        "GC-01"
+      ],
+      "allowed_paths": [],
+      "scope": "SQLite versionado, transações, snapshots, eventos, export/import e recuperação de interrupção.",
+      "invariant": "Banco é propriedade do Rust; migrações idempotentes; nenhum segredo em eventos.",
+      "requirements_status": "not_implemented",
+      "risks": [
+        "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
+      ],
+      "proofs": [
+        {
+          "id": "P-03-01",
+          "criterion": "Fechar e abrir preserva nós, tarefas e notas.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-03-02",
+          "criterion": "Crash simulado respeita limite de perda aprovado.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-03-03",
+          "criterion": "Migração up preserva dados e rollback é documentado.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-03-04",
+          "criterion": "Tarefa ativa volta como interrupted.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-03-05",
+          "criterion": "Backup corrompido é detectado e não substitui o válido.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-03-06",
+          "criterion": "Busca por token sintético não encontra segredos em eventos.",
+          "status": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "GC-04",
+      "version": 1,
+      "title": "Canvas, UX e foco",
+      "owner": "unassigned",
+      "status": "draft",
+      "depends_on": [
+        "GC-02",
+        "GC-03"
+      ],
+      "allowed_paths": [],
+      "scope": "React Flow, nós, zoom semântico, atalhos, navegação por teclado, overlays e gerenciamento de foco.",
+      "invariant": "Uma fonte de verdade para foco; zoom nunca destrói PTY.",
+      "requirements_status": "not_implemented",
+      "risks": [
+        "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
+      ],
+      "proofs": [
+        {
+          "id": "P-04-01",
+          "criterion": "Pan, zoom e arraste persistem.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-04-02",
+          "criterion": "Sequência A→B→canvas→overlay→A mantém digitação correta.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-04-03",
+          "criterion": "Zoom distante desmonta visual sem matar processo.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-04-04",
+          "criterion": "30 nós cumprem limiar medido.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-04-05",
+          "criterion": "Teclado e foco visível cobrem ações principais.",
+          "status": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "GC-05",
+      "version": 1,
+      "title": "Adaptadores e Peão de Palha",
+      "owner": "unassigned",
+      "status": "draft",
+      "depends_on": [
+        "GC-02",
+        "GC-03"
+      ],
+      "allowed_paths": [],
+      "scope": "Adaptadores Codex/Antigravity com descoberta de capacidades e simulador fake.",
+      "invariant": "Nenhuma flag presumida; capacidade desconhecida é desabilitada.",
+      "requirements_status": "not_implemented",
+      "risks": [
+        "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
+      ],
+      "proofs": [
+        {
+          "id": "P-05-01",
+          "criterion": "FakeAgent reproduz sucesso, falha, espera e cancelamento.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-05-02",
+          "criterion": "Codex detectado com versão e caminho absoluto.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-05-03",
+          "criterion": "Antigravity detectado ou marcado incompatível com prova.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-05-04",
+          "criterion": "Ausência de CLI mostra orientação sem travar.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-05-05",
+          "criterion": "Flags de autoaprovação inseguras são bloqueadas.",
+          "status": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "GC-06",
+      "version": 1,
+      "title": "Scheduler e isolamento",
+      "owner": "unassigned",
+      "status": "draft",
+      "depends_on": [
+        "GC-03",
+        "GC-05"
+      ],
+      "allowed_paths": [],
+      "scope": "Fila, DAG de dependências, papéis, concorrência, git worktrees e integração serial.",
+      "invariant": "Uma worktree por tarefa; ciclos rejeitados; nenhuma integração sem revisão.",
+      "requirements_status": "not_implemented",
+      "risks": [
+        "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
+      ],
+      "proofs": [
+        {
+          "id": "P-06-01",
+          "criterion": "DAG ordena tarefas e bloqueia dependências.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-06-02",
+          "criterion": "Ciclo A→B→A é rejeitado.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-06-03",
+          "criterion": "Duas tarefas não editam mesma worktree.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-06-04",
+          "criterion": "Concorrência respeita limite configurado.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-06-05",
+          "criterion": "Falha/interrupção não marca tarefa como concluída.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-06-06",
+          "criterion": "Merge com conflito interrompe e pede decisão.",
+          "status": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "GC-07",
+      "version": 1,
+      "title": "Porteira e confinamento",
+      "owner": "unassigned",
+      "status": "draft",
+      "depends_on": [
+        "GC-03",
+        "GC-06"
+      ],
+      "allowed_paths": [],
+      "scope": "Classes de risco, política de caminhos, aprovação por ação, auditoria e notificações.",
+      "invariant": "Fail-closed; aprovação não pode ser reaproveitada; escrita fora de escopo é negada.",
+      "requirements_status": "not_implemented",
+      "risks": [
+        "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
+      ],
+      "proofs": [
+        {
+          "id": "P-07-01",
+          "criterion": "Ação R0 permitida em escopo.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-07-02",
+          "criterion": "R2 pede aprovação antes de executar.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-07-03",
+          "criterion": "Alteração de argumento invalida aprovação.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-07-04",
+          "criterion": "Tentativa de path traversal/symlink é bloqueada.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-07-05",
+          "criterion": "Ação desconhecida exige aprovação.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-07-06",
+          "criterion": "Aprovação negada impede execução.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-07-07",
+          "criterion": "Auditoria permanece após exclusão lógica de workspace.",
+          "status": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "GC-08",
+      "version": 1,
+      "title": "Cartas e revisão cruzada",
+      "owner": "unassigned",
+      "status": "draft",
+      "depends_on": [
+        "GC-06",
+        "GC-07"
+      ],
+      "allowed_paths": [],
+      "scope": "Mensageria segura entre agentes, proveniência, revisão, evidências e integração.",
+      "invariant": "Conteúdo externo nunca vira comando sem política explícita.",
+      "requirements_status": "not_implemented",
+      "risks": [
+        "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
+      ],
+      "proofs": [
+        {
+          "id": "P-08-01",
+          "criterion": "Carta manual não entra no PTY antes de aprovação.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-08-02",
+          "criterion": "Payload hostil é tratado como dado.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-08-03",
+          "criterion": "Mensagem grande é rejeitada por limite.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-08-04",
+          "criterion": "Revisor diferente do autor registra decisão.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-08-05",
+          "criterion": "Artefato de A chega a B com hash e origem.",
+          "status": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "GC-09",
+      "version": 1,
+      "title": "Fazenda, Caramelo e gamificação",
+      "owner": "unassigned",
+      "status": "draft",
+      "depends_on": [
+        "GC-04",
+        "GC-07"
+      ],
+      "allowed_paths": [],
+      "scope": "Projeção de eventos em mapa, estados das plantas, mascote, clima, XP e modo Escritório.",
+      "invariant": "Camada visual não controla permissões nem estado de domínio; XP só cosmético.",
+      "requirements_status": "not_implemented",
+      "risks": [
+        "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
+      ],
+      "proofs": [
+        {
+          "id": "P-09-01",
+          "criterion": "Projeção determinística reproduz mesma cena.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-09-02",
+          "criterion": "Modo Escritório preserva todas funções.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-09-03",
+          "criterion": "Regras XP são idempotentes.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-09-04",
+          "criterion": "Som desligado por padrão e movimento reduzido respeitado.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-09-05",
+          "criterion": "Caramelo gera relatório reproduzível.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-09-06",
+          "criterion": "Assets têm licença rastreável.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-09-07",
+          "criterion": "Falha no renderer visual não interrompe execução.",
+          "status": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "GC-10",
+      "version": 1,
+      "title": "Recursos ampliados",
+      "owner": "unassigned",
+      "status": "draft",
+      "depends_on": [
+        "GC-04",
+        "GC-07"
+      ],
+      "allowed_paths": [],
+      "scope": "Notas, arquivos, busca FTS, composer, templates, chat, desenhos e portal local.",
+      "invariant": "Busca e preview respeitam escopo; templates não incluem segredos.",
+      "requirements_status": "not_implemented",
+      "risks": [
+        "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
+      ],
+      "proofs": [
+        {
+          "id": "P-10-01",
+          "criterion": "Nota editada sobrevive ao reinício.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-10-02",
+          "criterion": "Busca respeita workspace e permissões.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-10-03",
+          "criterion": "Template exportado remove segredos sintéticos.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-10-04",
+          "criterion": "Portal escuta somente loopback.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-10-05",
+          "criterion": "Referências @arquivo fora do escopo são negadas.",
+          "status": "not_run"
+        }
+      ]
+    },
+    {
+      "id": "GC-11",
+      "version": 1,
+      "title": "Entrega, instalação e operação",
+      "owner": "unassigned",
+      "status": "draft",
+      "depends_on": [
+        "GC-00",
+        "GC-01",
+        "GC-02",
+        "GC-03",
+        "GC-04",
+        "GC-05",
+        "GC-06",
+        "GC-07",
+        "GC-09"
+      ],
+      "allowed_paths": [],
+      "scope": "E2E, acessibilidade, instalador Windows, documentação, atualização, backup, diagnóstico e release.",
+      "invariant": "Sem publicação automática; release só após autorização expressa.",
+      "requirements_status": "not_implemented",
+      "risks": [
+        "No contract seal without reproducible evidence, independent review and explicit authenticated owner approval"
+      ],
+      "proofs": [
+        {
+          "id": "P-11-01",
+          "criterion": "Instalação e desinstalação em Windows limpo.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-11-02",
+          "criterion": "E2E Primeira Colheita passa de ponta a ponta.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-11-03",
+          "criterion": "Restauração de backup é demonstrada.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-11-04",
+          "criterion": "Contraste, navegação e leitor de tela auditados.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-11-05",
+          "criterion": "Inventário SBOM e licenças anexados.",
+          "status": "not_run"
+        },
+        {
+          "id": "P-11-06",
+          "criterion": "Pacote recebe aprovação humana antes de distribuir.",
+          "status": "not_run"
+        }
+      ]
+    }
+  ]
+}
