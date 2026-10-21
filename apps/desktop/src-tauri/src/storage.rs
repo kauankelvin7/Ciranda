@@ -128,7 +128,7 @@ impl WorkspaceDb {
             .map_err(|_| "workspace layout cannot be saved")?;
         transaction
             .commit()
-            .map_err(|_| "workspace layout cannot be saved")
+            .map_err(|_| String::from("workspace layout cannot be saved"))
     }
 }
 

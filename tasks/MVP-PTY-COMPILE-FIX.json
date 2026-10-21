@@ -1,0 +1,84 @@
+{
+  "id": "MVP-PTY-COMPILE-FIX",
+  "owner": "FERREIRO",
+  "status": "implemented_light_checks_only",
+  "branch": "codex/mvp-pty-windows",
+  "base_commit": "8f1c213b43fa461af805e1af978b750072286ec8",
+  "allowed_paths": [
+    "apps/desktop/src-tauri/src/storage.rs",
+    "apps/desktop/src-tauri/src/sessions.rs",
+    "tasks/MVP-PTY-COMPILE-FIX.json",
+    "proofs/mvp-pty/compile-fix/"
+  ],
+  "authorization": "Owner authorized only the concrete Rust compile fixes from Windows CI; no Cargo compile/test/build/clippy locally, no remote operation or new run.",
+  "baseline": {
+    "head_before": "8f1c213b43fa461af805e1af978b750072286ec8",
+    "staged_before": "empty",
+    "preexisting_dirty_preserved": [
+      "docs/PTY_IMPLEMENTATION.md",
+      "tasks/MVP-PTY.json",
+      "proofs/mvp-pty/validation.json",
+      "proofs/mvp-pty/* listed in the baseline hash record"
+    ],
+    "hash_record": "proofs/mvp-pty/compile-fix/baseline-protected-hashes.txt",
+    "hash_record_sha256": "e7986b8d440ce078cfd1aab01adb3b4ff8beed244eaa1568556fdd2e57f4e9a5"
+  },
+  "source_ci": {
+    "run_id": 39484580459,
+    "job_id": 118841558473,
+    "conclusion": "failure",
+    "checkout_commit": "da6633b875227885a9d0dbdfb431014f3a536c0e",
+    "pull_request_head": "3b542f856f6386303289f865b5ccda6b496612ec",
+    "base_commit": "34aaf69ae702f80ae455618307d2b155291c8198",
+    "log": "proofs/mvp-pty/ci-39484580459-job-118841558473.log",
+    "log_sha256": "e46e5eadda83ec0f09597cbe3eb9158deb5dfe45fdaae4a6d644fc7109e9c0b9",
+    "failure_utc": "2026-10-20T19:41:11.4432066Z",
+    "exit_code": 1,
+    "findings": [
+      "E0308 storage.rs:129-131: commit map_err returned &str where Result<(), String> was required.",
+      "E0596 sessions.rs:477-482: process_guard.as_ref() yielded an immutable borrow before child.try_wait(), which requires mutable access.",
+      "Unused import warning for PtySystem at sessions.rs:4; clippy was not run, so any -D warnings effect is unverified."
+    ],
+    "rust_tests_started": false
+  },
+  "changes": [
+    "Map transaction commit failure to String while preserving the established generic message and propagating Err; do not expose rusqlite details.",
+    "Use a mutable process mutex guard and as_mut() for child.try_wait(), retaining existing fail-closed behavior and lock scope.",
+    "Remove PtySystem after confirming the symbol was only imported and unused."
+  ],
+  "source_sha256": {
+    "apps/desktop/src-tauri/src/storage.rs": "cccfcd88a857f74cfe333bcd993f99d52f5f79303162bfe7342f44381037eae4",
+    "apps/desktop/src-tauri/src/sessions.rs": "08be2c256c8bcafcdbf8de875f52b628a84682431dafc41e4d89a8ea6414462d"
+  },
+  "validation": {
+    "status": "light_checks_passed_compiler_unverified",
+    "rustfmt_1_94_1": {
+      "version": "rustfmt 1.8.0-stable (e408947bfd 2026-03-25), via Rust 1.94.1-x86_64-pc-windows-msvc",
+      "command": "C:\\Users\\Kauan\\.cargo\\bin\\rustup.exe run 1.94.1-x86_64-pc-windows-msvc rustfmt --check apps/desktop/src-tauri/src/storage.rs apps/desktop/src-tauri/src/sessions.rs",
+      "started_utc": "2026-10-21T11:18:08.0067783Z",
+      "exit_code": 0,
+      "evidence": "proofs/mvp-pty/compile-fix/rustfmt-check-final.log",
+      "evidence_sha256": "b97870100350163832754f1b3cbffb9b9c269467664e78f7d6f766ff46b43f2d"
+    },
+    "git_diff_check": {
+      "command": "git diff --check -- apps/desktop/src-tauri/src/storage.rs apps/desktop/src-tauri/src/sessions.rs",
+      "started_utc": "2026-10-21T11:18:16.2787756Z",
+      "exit_code": 0,
+      "result": "No whitespace errors; Git emitted only LF-to-CRLF working-copy notices.",
+      "evidence": "proofs/mvp-pty/compile-fix/source-diff-check-final.log",
+      "evidence_sha256": "385e45e283bd5ad4656e97c9aea0a64a58252be22e34a138d9a93f7864be5bc4"
+    },
+    "staged_paths_check": "passed after final staging; exact paths recorded in proofs/mvp-pty/compile-fix/staged-paths-check.log",
+    "staged_diff_check": "passed after final staging; git diff --cached --check exit 0; proofs/mvp-pty/compile-fix/staged-diff-check.log",
+    "cargo_metadata": "not_run; no manifest or dependency changes",
+    "cargo_check": "not_run_by_owner_order",
+    "cargo_test": "not_run_by_owner_order",
+    "cargo_build": "not_run_by_owner_order",
+    "cargo_clippy": "not_run_by_owner_order",
+    "runtime_pty_path_sqlite": "not executed; no runtime or behavioral claim",
+    "compiler_validation_claimed": false,
+    "new_ci_run": "not authorized",
+    "tool_discovery": "rustup was absent from PATH; existing rustup.exe at C:\\Users\\Kauan\\.cargo\\bin\\rustup.exe was used without installation or download. Version query exit 0; evidence rustfmt-version.log, SHA-256 9208220c64d7332c59be13aaa8a3f9ec5be882e9be7aa5b0f7da434b70da142a."
+  },
+  "updated_utc": "2026-10-21T11:19:15Z"
+}

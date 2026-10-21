@@ -1,7 +1,7 @@
 use crate::job_object::ProcessTreeGuard;
 use crate::path_policy::{resolve_cwd, workspace_root};
 use crate::storage::WorkspaceDb;
-use portable_pty::{native_pty_system, Child, CommandBuilder, MasterPty, PtySize, PtySystem};
+use portable_pty::{native_pty_system, Child, CommandBuilder, MasterPty, PtySize};
 use serde::Serialize;
 use std::collections::{HashMap, VecDeque};
 use std::io::{Read, Write};
@@ -471,10 +471,10 @@ impl Session {
     }
 
     fn has_live_process_or_unknown(&self) -> bool {
-        let Ok(process_guard) = self.process.lock() else {
+        let Ok(mut process_guard) = self.process.lock() else {
             return true;
         };
-        let Some(process) = process_guard.as_ref() else {
+        let Some(process) = process_guard.as_mut() else {
             return false;
         };
         let child_exited = process
