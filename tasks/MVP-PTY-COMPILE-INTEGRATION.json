@@ -1,0 +1,26 @@
+{
+  "id": "MVP-PTY-COMPILE-INTEGRATION",
+  "owner": "FERREIRO",
+  "status": "local_candidate_prepared",
+  "branch": "codex/mvp-pty-compile-candidate",
+  "base_commit": "3b542f856f6386303289f865b5ccda6b496612ec",
+  "source_commit": "98411463ba2169874221347dcb45644ef7288a61",
+  "source_cherry_pick_commit": "e70bd53094538b48e22e641f6075a799691419ee",
+  "independent_review": {
+    "reviewer": "JARDINEIRO/SENTINELA",
+    "review_commit": "97d267828102e8fc7e2142d2fae06e4997f4ca73",
+    "review_base_commit": "44dfb47107d6869dc5e60968b1bda94e6f72ce05",
+    "reviewed_source_commit": "98411463ba2169874221347dcb45644ef7288a61",
+    "verdict": "no_blocking_static_findings",
+    "scope": "static_review_only"
+  },
+  "allowed_paths": [
+    "apps/desktop/src-tauri/src/storage.rs",
+    "apps/desktop/src-tauri/src/sessions.rs",
+    "tasks/MVP-PTY-COMPILE-FIX.json",
+    "tasks/MVP-PTY-COMPILE-INTEGRATION.json"
+  ],
+  "native_validation": "not_run",
+  "product_validation": "No local Cargo check/test/build/Clippy or native runtime; source commit carries earlier lightweight checks.",
+  "remote_operations": "none"
+}

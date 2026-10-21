@@ -99,7 +99,7 @@ impl ProcessTreeGuard {
     }
 }
 
-#[cfg(windows)]
+#[cfg(all(windows, test))]
 pub(crate) fn is_process_running(process_id: u32) -> bool {
     use windows_sys::Win32::Foundation::CloseHandle;
     use windows_sys::Win32::System::Threading::{

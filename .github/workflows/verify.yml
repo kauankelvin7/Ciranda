@@ -54,5 +54,12 @@ jobs:
         run: cargo +1.94.1 clippy --locked --manifest-path apps/desktop/src-tauri/Cargo.toml -- -D warnings
       - name: Rust dependency report
         run: cargo +1.94.1 tree --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - name: Build actual desktop executable without installer
+        working-directory: apps/desktop
+        env:
+          RUSTUP_TOOLCHAIN: '1.94.1'
+        run: node node_modules/@tauri-apps/cli/tauri.js build --debug --no-bundle --ci -- --locked
+      - name: Native MVP smoke (real WebView2, ConPTY and SQLite)
+        run: node tooling/smoke-desktop.mjs
 
 # A workflow definition or queued run is not a successful check or native smoke.

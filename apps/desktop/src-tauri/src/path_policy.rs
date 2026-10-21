@@ -62,7 +62,7 @@ pub(crate) fn resolve_cwd(root: &Path, cwd: Option<&str>) -> Result<PathBuf, Str
 
     let mut candidate = root.to_path_buf();
     let mut saw_component = false;
-    for part in raw.split(|ch| ch == '/' || ch == '\\') {
+    for part in raw.split(['/', '\\']) {
         if part.is_empty() || part == "." {
             continue;
         }
@@ -106,16 +106,29 @@ pub(crate) fn ensure_directory_without_reparse(path: &Path) -> Result<(), String
 }
 
 pub(crate) fn reject_reparse_components(path: &Path) -> Result<(), String> {
+    if !path.is_absolute() {
+        return Err("workspace path must be an absolute path with a root directory".into());
+    }
     let mut current = PathBuf::new();
+    let mut root_seen = false;
     for component in path.components() {
         match component {
             Component::Prefix(prefix) => current.push(prefix.as_os_str()),
-            Component::RootDir => current.push(component.as_os_str()),
+            Component::RootDir => {
+                current.push(component.as_os_str());
+                root_seen = true;
+            }
             Component::CurDir => {}
             Component::ParentDir => {
                 return Err("path traversal is not allowed".into());
             }
             Component::Normal(name) => current.push(name),
+        }
+        // `is_absolute` can be true for a verbatim Windows prefix before a
+        // RootDir component has been observed. Inspect only after appending
+        // the complete root, then inspect every following path component.
+        if !root_seen || !current.is_absolute() {
+            continue;
         }
         match fs::symlink_metadata(&current) {
             Ok(metadata) => {
@@ -128,6 +141,9 @@ pub(crate) fn reject_reparse_components(path: &Path) -> Result<(), String> {
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
             Err(_) => return Err("workspace path cannot be inspected".into()),
         }
+    }
+    if !root_seen {
+        return Err("workspace path must be an absolute path with a root directory".into());
     }
     Ok(())
 }
@@ -289,7 +305,7 @@ fn is_windows_reparse_point(_path: &Path) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{resolve_cwd, resolve_workspace_root};
+    use super::{reject_reparse_components, resolve_cwd, resolve_workspace_root};
     use std::fs;
     use std::path::{Path, PathBuf};
     use uuid::Uuid;
@@ -323,6 +339,49 @@ mod tests {
         let resolved = resolve_workspace_root(Some(test_root.path().as_os_str()), Path::new("."))
             .expect("configured root should resolve");
         assert_eq!(resolved, fs::canonicalize(test_root.path()).unwrap());
+    }
+
+    #[test]
+    fn canonical_workspace_root_components_can_be_inspected() {
+        let test_root = TestRoot::new();
+        reject_reparse_components(test_root.path())
+            .expect("standard workspace root components should be inspectable");
+        let canonical = fs::canonicalize(test_root.path()).unwrap();
+        reject_reparse_components(&canonical)
+            .expect("canonical workspace root components should be inspectable");
+    }
+
+    #[test]
+    fn reject_reparse_components_rejects_parent_traversal() {
+        #[cfg(windows)]
+        let path = Path::new("C:\\workspace\\..\\outside");
+        #[cfg(not(windows))]
+        let path = Path::new("/workspace/../outside");
+        assert_eq!(
+            reject_reparse_components(path),
+            Err("path traversal is not allowed".into())
+        );
+    }
+
+    #[test]
+    fn reject_reparse_components_rejects_paths_without_root_directory() {
+        let cases = [
+            Path::new("relative/path/to/file"),
+            Path::new(""),
+            #[cfg(windows)]
+            Path::new(r"\\?\C:"),
+            #[cfg(windows)]
+            Path::new("C:foo\\bar"),
+            #[cfg(windows)]
+            Path::new(r"\foo\bar"),
+        ];
+        for invalid in cases {
+            assert_eq!(
+                reject_reparse_components(invalid),
+                Err("workspace path must be an absolute path with a root directory".into()),
+                "expected fail-closed error for path {invalid:?}"
+            );
+        }
     }
 
     #[test]

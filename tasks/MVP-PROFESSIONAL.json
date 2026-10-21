@@ -4,7 +4,27 @@
   "owner": "REGENTE",
   "status": "executing",
   "branch": "codex/professional-first",
-  "allowed_paths": ["AGENTS.md", ".agents/", "CIRANDA_PLANO_MESTRE_V3.md", "docs/DECISOES_ARQUITETURAIS.md", "docs/SESSION_API.md", "docs/DECISIONS.md", "docs/STATUS.md", "docs/RUNBOOK.md", "docs/ANALISE_MAESTRI.md", "docs/PARIDADE_MAESTRI.md", "README.md", "contracts/", "tasks/backlog.md", "tasks/MVP-PROFESSIONAL.json", "tasks/GC00-MAESTRI-SETUP.json", ".gitignore", ".github/workflows/verify.yml", "tooling/", "proofs/mvp-regente/"],
+  "allowed_paths": [
+    "AGENTS.md",
+    ".agents/",
+    "CIRANDA_PLANO_MESTRE_V3.md",
+    "docs/DECISOES_ARQUITETURAIS.md",
+    "docs/SESSION_API.md",
+    "docs/DECISIONS.md",
+    "docs/STATUS.md",
+    "docs/RUNBOOK.md",
+    "docs/ANALISE_MAESTRI.md",
+    "docs/PARIDADE_MAESTRI.md",
+    "README.md",
+    "contracts/",
+    "tasks/backlog.md",
+    "tasks/MVP-PROFESSIONAL.json",
+    "tasks/GC00-MAESTRI-SETUP.json",
+    ".gitignore",
+    ".github/workflows/verify.yml",
+    "tooling/",
+    "proofs/mvp-regente/"
+  ],
   "authority": "Proprietario autorizou implementar canvas e PTY agora, em worktrees isoladas, mesmo se ambiente impedir validacao; nao concede Selo nem libera contratos.",
   "workers": [
     {
@@ -12,32 +32,105 @@
       "owner": "FERREIRO",
       "branch": "codex/mvp-pty-windows",
       "worktree": ".worktrees/ferreiro-profissional",
-      "status": "executing",
-      "allowed_paths": ["apps/desktop/src-tauri/", "tasks/MVP-PTY.json", "proofs/mvp-pty/", "docs/PTY_IMPLEMENTATION.md"],
-      "acceptance": ["Seguir exatamente docs/SESSION_API.md", "PTY Windows real com input/output/resize limitados e sessoes independentes", "Backend valida caminhos no workspace e recusa escapes/links/ADS/UNC", "Fechar sessao/app encerra arvore com Job Object; UI desmontada nao mata processo", "SQLite persistente para layout, com recuperacao segura e sem falsa retomada de processo", "Testes positivos/negativos e evidencias com commit/UTC/hash/exits; bloqueio ambiental separado de falha de produto", "Nao instalar globalmente, desativar sandbox, iniciar Fazenda ou alegar validacao sem executar", "Entregar commit revisavel e retornar via maestri ask REGENTE"]
+      "status": "frozen_native_validation_pending",
+      "allowed_paths": [
+        "apps/desktop/src-tauri/",
+        "tasks/MVP-PTY.json",
+        "proofs/mvp-pty/",
+        "docs/PTY_IMPLEMENTATION.md"
+      ],
+      "acceptance": [
+        "Seguir exatamente docs/SESSION_API.md",
+        "PTY Windows real com input/output/resize limitados e sessoes independentes",
+        "Backend valida caminhos no workspace e recusa escapes/links/ADS/UNC",
+        "Fechar sessao/app encerra arvore com Job Object; UI desmontada nao mata processo",
+        "SQLite persistente para layout, com recuperacao segura e sem falsa retomada de processo",
+        "Testes positivos/negativos e evidencias com commit/UTC/hash/exits; bloqueio ambiental separado de falha de produto",
+        "Nao instalar globalmente, desativar sandbox, iniciar Fazenda ou alegar validacao sem executar",
+        "Entregar commit revisavel e retornar via maestri ask REGENTE"
+      ],
+      "integrated_source": "824cff3527a000208d40204fe2861ba4ab39d1f7",
+      "integrated_build_fix": "8f1c213b43fa461af805e1af978b750072286ec8"
     },
     {
       "id": "MVP-CANVAS",
       "owner": "JARDINEIRO",
       "branch": "codex/mvp-professional-canvas",
       "worktree": ".worktrees/jardineiro-profissional",
-      "status": "executing",
-      "allowed_paths": ["apps/desktop/src/", "apps/desktop/tests/", "apps/desktop/package.json", "apps/desktop/package-lock.json", "apps/desktop/index.html", "apps/desktop/eslint.config.mjs", "apps/desktop/tsconfig.json", "apps/desktop/vite.config.ts", "docs/ARCHITECTURE.md", "docs/TRACEABILITY.md", "docs/CANVAS_IMPLEMENTATION.md", "tasks/MVP-CANVAS.json", "proofs/mvp-canvas/"],
-      "acceptance": ["Modo Profissional escuro padrao; nenhuma Fazenda", "Canvas com pan/zoom, nos arrastaveis/redimensionaveis, conexoes context_reference funcionais, grupos e exclusao explicita", "Persistir/restaurar layout v1; rejeitar referencias invalidas e nao executar texto por conexao", "Terminal xterm real via contrato docs/SESSION_API.md, sem saida simulada; preview do navegador sem runtime claramente indicado", "Processo pertence ao Rust; montar/desmontar componente nao cria/fecha sessao", "Teclado, foco visivel e menus contextuais; atualizar rastreabilidade de acessibilidade", "Testes reais de interacoes/modelo/persistencia, lint/tipos/build e evidencias com commit/UTC/hash/exits", "Dependencias apenas locais e fixadas, sem instalacao global/publicacao", "Entregar commit revisavel e retornar via maestri ask REGENTE"]
+      "status": "review_complete_native_validation_pending",
+      "allowed_paths": [
+        "apps/desktop/src/",
+        "apps/desktop/tests/",
+        "apps/desktop/package.json",
+        "apps/desktop/package-lock.json",
+        "apps/desktop/index.html",
+        "apps/desktop/eslint.config.mjs",
+        "apps/desktop/tsconfig.json",
+        "apps/desktop/vite.config.ts",
+        "docs/ARCHITECTURE.md",
+        "docs/TRACEABILITY.md",
+        "docs/CANVAS_IMPLEMENTATION.md",
+        "tasks/MVP-CANVAS.json",
+        "proofs/mvp-canvas/",
+        "tooling/smoke-desktop.mjs"
+      ],
+      "acceptance": [
+        "Modo Profissional escuro padrao; nenhuma Fazenda",
+        "Canvas com pan/zoom, nos arrastaveis/redimensionaveis, conexoes context_reference funcionais, grupos e exclusao explicita",
+        "Persistir/restaurar layout v1; rejeitar referencias invalidas e nao executar texto por conexao",
+        "Terminal xterm real via contrato docs/SESSION_API.md, sem saida simulada; preview do navegador sem runtime claramente indicado",
+        "Processo pertence ao Rust; montar/desmontar componente nao cria/fecha sessao",
+        "Teclado, foco visivel e menus contextuais; atualizar rastreabilidade de acessibilidade",
+        "Testes reais de interacoes/modelo/persistencia, lint/tipos/build e evidencias com commit/UTC/hash/exits",
+        "Dependencias apenas locais e fixadas, sem instalacao global/publicacao",
+        "Entregar commit revisavel e retornar via maestri ask REGENTE"
+      ],
+      "integrated_source": "6a1afd46ec6fbc04b82af964533d73d00504ef81",
+      "harness_source": "067c5542fb7a5f2f6eb3600824539695ca026bbc"
     }
   ],
-  "acceptance": ["Decisao definitiva incorporada ao plano e contratos", "Investigar MSVC/PATH e EPERM sem desativar sandbox; instalar somente componentes explicitamente autorizados", "Integrar entregas revisadas sem disputar arquivos", "Smoke real: abrir CIRANDA, criar terminal, executar comando real, ver saida, encerrar sessao, reabrir layout", "Nenhuma alegacao de MVP executavel antes do smoke passar"],
+  "acceptance": [
+    "Decisao definitiva incorporada ao plano e contratos",
+    "Investigar MSVC/PATH e EPERM sem desativar sandbox; instalar somente componentes explicitamente autorizados",
+    "Integrar entregas revisadas sem disputar arquivos",
+    "Smoke real: abrir CIRANDA, criar terminal, executar comando real, ver saida, encerrar sessao, reabrir layout",
+    "Nenhuma alegacao de MVP executavel antes do smoke passar"
+  ],
   "review": {
     "report": "docs/reviews/MVP-INTEGRACAO.md",
-    "status": "corrections_requested",
+    "status": "static_reviews_complete_native_validation_pending",
     "backend_initial_source": "f4a832064986263bdb0e157b28d2326274ecae69",
     "frontend_initial_source": "7bcbdb60b05aac375c6cd88d5a16485acf6f8cfc",
     "native_smoke": "not_run",
-    "human_blocker": "Free disk space: authorized MSVC/SDK installer failed 0x80070070 (-2147024784). No personal files removed."
+    "human_blocker": "Free disk space: authorized MSVC/SDK installer failed 0x80070070 (-2147024784). No personal files removed.",
+    "integrated_commit": "34aaf69ae702f80ae455618307d2b155291c8198",
+    "local_checks": {
+      "commit": "34aaf69ae702f80ae455618307d2b155291c8198",
+      "source_clean": true,
+      "frontend_tests": 24,
+      "governance_tests": 8,
+      "lint": "pass",
+      "types": "pass",
+      "frontend_build": "pass",
+      "rust_format": "pass",
+      "rust_tests": "not_executed"
+    },
+    "ci": {
+      "run_id": 39476973848,
+      "job_id": 118815388569,
+      "status": "failure",
+      "failure": "tauri-build: icons/icon.ico not found, before product tests",
+      "log": "proofs/mvp-regente/ci-39476973848-job-118815388569.log",
+      "log_sha256": "5bf22b9791a0315b5effa5a7a60716276710edf2fb35a78b19900070865f5225"
+    },
+    "backend_icon_independent_review": "44dfb47",
+    "backend_icon_result": "No blocking static findings; not compiled or executed",
+    "delivery_constraint": "No heavy build/test started. Publish reviewed source only to codex/professional-first; do not update main or open a PR that triggers CI."
   },
   "owner_authorizations": {
     "msvc_installation": "Authorized explicitly via request_user_input_async; Microsoft-signed bootstrapper; C++ Build Tools and Windows SDK only, no automatic reboot.",
-    "remote": "https://github.com/kauankelvin7/Ciranda.git; owner explicitly authorized connecting and pushing reviewed source. No force-push or private runtime artifacts."
+    "remote": "https://github.com/kauankelvin7/Ciranda.git; owner explicitly authorized connecting and pushing reviewed source. No force-push or private runtime artifacts.",
+    "publication_scope": "Existing explicit owner authorization permits REGENTE to push reviewed source to the specified remote; workers remain local. No force-push, deployment, binaries or private proofs."
   },
   "human_seal_approval": null
 }

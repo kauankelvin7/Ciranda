@@ -1,7 +1,7 @@
 use crate::job_object::ProcessTreeGuard;
 use crate::path_policy::{resolve_cwd, workspace_root};
 use crate::storage::WorkspaceDb;
-use portable_pty::{native_pty_system, Child, CommandBuilder, MasterPty, PtySize, PtySystem};
+use portable_pty::{native_pty_system, Child, CommandBuilder, MasterPty, PtySize};
 use serde::Serialize;
 use std::collections::{HashMap, VecDeque};
 use std::io::{Read, Write};
@@ -471,10 +471,10 @@ impl Session {
     }
 
     fn has_live_process_or_unknown(&self) -> bool {
-        let Ok(process_guard) = self.process.lock() else {
+        let Ok(mut process_guard) = self.process.lock() else {
             return true;
         };
-        let Some(process) = process_guard.as_ref() else {
+        let Some(process) = process_guard.as_mut() else {
             return false;
         };
         let child_exited = process
@@ -873,6 +873,130 @@ mod tests {
         }
     }
 
+    #[cfg(windows)]
+    const CURSOR_POSITION_QUERY: &[u8] = b"\x1b[6n";
+    #[cfg(windows)]
+    const CURSOR_POSITION_RESPONSE: &str = "\x1b[1;1R";
+
+    #[cfg(windows)]
+    #[derive(Default)]
+    struct RawPtyHarness {
+        after_seq: u64,
+        bytes: Vec<u8>,
+        cursor_queries_answered: usize,
+        truncated: bool,
+    }
+
+    #[cfg(windows)]
+    impl RawPtyHarness {
+        fn poll(&mut self, manager: &SessionManager, session_id: &str) -> Result<(), String> {
+            let read = manager.read(session_id, self.after_seq)?;
+            self.truncated |= read.truncated;
+            for chunk in read.chunks {
+                self.after_seq = self.after_seq.max(chunk.seq);
+                self.bytes.extend_from_slice(&chunk.data);
+            }
+
+            let cursor_queries = count_cursor_position_queries(&self.bytes);
+            while self.cursor_queries_answered < cursor_queries {
+                // The raw harness emulates xterm's cursor response in tests only.
+                // Production input still comes from the real UI and IPC path.
+                manager.write(session_id, CURSOR_POSITION_RESPONSE)?;
+                self.cursor_queries_answered += 1;
+            }
+            Ok(())
+        }
+
+        fn settle_startup(
+            &mut self,
+            manager: &SessionManager,
+            session_id: &str,
+        ) -> Result<(), String> {
+            let deadline = Instant::now() + Duration::from_secs(1);
+            loop {
+                self.poll(manager, session_id)?;
+                if self.cursor_queries_answered > 0 {
+                    return Ok(());
+                }
+                if Instant::now() >= deadline {
+                    return Err(format!(
+                        "raw PTY startup did not emit and answer CSI 6 n within one second; {}",
+                        self.diagnostics()
+                    ));
+                }
+                thread::sleep(Duration::from_millis(10));
+            }
+        }
+
+        fn contains_marker(&self, marker: &str) -> bool {
+            self.bytes
+                .windows(marker.len())
+                .any(|window| window == marker.as_bytes())
+        }
+
+        fn diagnostics(&self) -> String {
+            let query_count = count_cursor_position_queries(&self.bytes);
+            let evidence = if self.bytes.len() <= 512 {
+                format!(
+                    "escaped='{}' hex=[{}]",
+                    escaped_bytes(&self.bytes),
+                    hex_bytes(&self.bytes)
+                )
+            } else {
+                let head = &self.bytes[..256];
+                let tail = &self.bytes[self.bytes.len() - 256..];
+                format!(
+                    "head escaped='{}' hex=[{}]; tail escaped='{}' hex=[{}]",
+                    escaped_bytes(head),
+                    hex_bytes(head),
+                    escaped_bytes(tail),
+                    hex_bytes(tail)
+                )
+            };
+            format!(
+                "raw PTY output: {} byte(s), ring_truncated={}, cursor-position queries answered={}/{}; {}",
+                self.bytes.len(),
+                self.truncated,
+                self.cursor_queries_answered,
+                query_count,
+                evidence
+            )
+        }
+    }
+
+    #[cfg(windows)]
+    fn count_cursor_position_queries(bytes: &[u8]) -> usize {
+        bytes
+            .windows(CURSOR_POSITION_QUERY.len())
+            .filter(|window| *window == CURSOR_POSITION_QUERY)
+            .count()
+    }
+
+    #[cfg(windows)]
+    fn escaped_bytes(bytes: &[u8]) -> String {
+        let mut escaped = String::new();
+        for byte in bytes {
+            match *byte {
+                b'\r' => escaped.push_str("\\r"),
+                b'\n' => escaped.push_str("\\n"),
+                b'\t' => escaped.push_str("\\t"),
+                0x1b => escaped.push_str("\\x1b"),
+                0x20..=0x7e => escaped.push(char::from(*byte)),
+                _ => escaped.push_str(&format!("\\x{byte:02x}")),
+            }
+        }
+        escaped
+    }
+
+    #[cfg(windows)]
+    fn hex_bytes(bytes: &[u8]) -> String {
+        bytes
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<Vec<_>>()
+            .join(" ")
+    }
+
     #[test]
     fn terminal_limits_accept_boundaries_and_reject_outside_values() {
         assert!(validate_dimensions(1, 1).is_ok());
@@ -1008,10 +1132,17 @@ mod tests {
         let info = manager
             .create(None, 80, 24)
             .expect("real Windows ConPTY should start");
+        let mut harness = RawPtyHarness::default();
+        harness
+            .settle_startup(&manager, &info.id)
+            .expect("raw PTY harness should answer startup cursor queries");
         manager.write(&info.id, "exit\r\n").unwrap();
 
         let deadline = Instant::now() + Duration::from_secs(8);
         loop {
+            harness
+                .poll(&manager, &info.id)
+                .expect("raw PTY harness should answer cursor queries");
             let state = manager
                 .list()
                 .unwrap()
@@ -1023,11 +1154,16 @@ mod tests {
                 assert_eq!(
                     state,
                     SessionState::Exited,
-                    "normal PowerShell exit must not be reported as reader failure"
+                    "normal PowerShell exit must not be reported as reader failure; {}",
+                    harness.diagnostics()
                 );
                 break;
             }
-            assert!(Instant::now() < deadline, "PowerShell did not exit in time");
+            assert!(
+                Instant::now() < deadline,
+                "PowerShell did not exit in time; {}",
+                harness.diagnostics()
+            );
             thread::sleep(Duration::from_millis(25));
         }
         manager.shutdown();
@@ -1042,6 +1178,10 @@ mod tests {
         let info = manager
             .create(None, 80, 24)
             .expect("real Windows ConPTY should start");
+        let mut harness = RawPtyHarness::default();
+        harness
+            .settle_startup(&manager, &info.id)
+            .expect("raw PTY harness should answer startup cursor queries");
         let session = manager.sessions.get(&info.id).unwrap();
         session.status.lock().unwrap().state = SessionState::Failed;
 
@@ -1059,6 +1199,10 @@ mod tests {
         let info = manager
             .create(None, 80, 24)
             .expect("real Windows ConPTY should start");
+        let mut harness = RawPtyHarness::default();
+        harness
+            .settle_startup(&manager, &info.id)
+            .expect("raw PTY harness should answer startup cursor queries");
         assert_eq!(info.state, SessionState::Running);
         manager.resize(&info.id, 100, 40).unwrap();
         let command = "[Console]::WriteLine(('CIRANDA_' + 'PTY_TEST_TOKEN'))\r\n";
@@ -1067,13 +1211,10 @@ mod tests {
         let deadline = Instant::now() + Duration::from_secs(8);
         let mut observed = false;
         while Instant::now() < deadline {
-            let read = manager.read(&info.id, 0).unwrap();
-            let output = read
-                .chunks
-                .iter()
-                .flat_map(|chunk| chunk.data.iter().copied())
-                .collect::<Vec<_>>();
-            if String::from_utf8_lossy(&output).contains("CIRANDA_PTY_TEST_TOKEN") {
+            harness
+                .poll(&manager, &info.id)
+                .expect("raw PTY harness should answer cursor queries");
+            if harness.contains_marker("CIRANDA_PTY_TEST_TOKEN") {
                 observed = true;
                 break;
             }
@@ -1081,8 +1222,12 @@ mod tests {
         }
         assert!(
             observed,
-            "PowerShell output must arrive through the PTY reader"
+            "PowerShell output must arrive through the PTY reader; {}",
+            harness.diagnostics()
         );
+        harness
+            .poll(&manager, &info.id)
+            .expect("raw PTY harness should drain final output before close");
         manager.close(&info.id).unwrap();
         manager.close(&info.id).unwrap();
         assert_eq!(manager.list().unwrap()[0].state, SessionState::Closed);
@@ -1100,6 +1245,14 @@ mod tests {
         let second = manager
             .create(None, 90, 30)
             .expect("second ConPTY should start");
+        let mut first_harness = RawPtyHarness::default();
+        let mut second_harness = RawPtyHarness::default();
+        first_harness
+            .settle_startup(&manager, &first.id)
+            .expect("raw PTY harness should answer first startup cursor queries");
+        second_harness
+            .settle_startup(&manager, &second.id)
+            .expect("raw PTY harness should answer second startup cursor queries");
         let first_command = "[Console]::WriteLine(('CIRANDA_' + 'FIRST_SESSION'))\r\n";
         let second_command = "[Console]::WriteLine(('CIRANDA_' + 'SECOND_SESSION'))\r\n";
         assert!(!first_command.contains("CIRANDA_FIRST_SESSION"));
@@ -1108,38 +1261,46 @@ mod tests {
         manager.write(&second.id, second_command).unwrap();
 
         let deadline = Instant::now() + Duration::from_secs(8);
-        let mut first_output = String::new();
-        let mut second_output = String::new();
         while Instant::now() < deadline {
-            let first_read = manager.read(&first.id, 0).unwrap();
-            let second_read = manager.read(&second.id, 0).unwrap();
-            first_output = String::from_utf8_lossy(
-                &first_read
-                    .chunks
-                    .iter()
-                    .flat_map(|chunk| chunk.data.iter().copied())
-                    .collect::<Vec<_>>(),
-            )
-            .into_owned();
-            second_output = String::from_utf8_lossy(
-                &second_read
-                    .chunks
-                    .iter()
-                    .flat_map(|chunk| chunk.data.iter().copied())
-                    .collect::<Vec<_>>(),
-            )
-            .into_owned();
-            if first_output.contains("CIRANDA_FIRST_SESSION")
-                && second_output.contains("CIRANDA_SECOND_SESSION")
+            first_harness
+                .poll(&manager, &first.id)
+                .expect("raw PTY harness should answer first cursor queries");
+            second_harness
+                .poll(&manager, &second.id)
+                .expect("raw PTY harness should answer second cursor queries");
+            if first_harness.contains_marker("CIRANDA_FIRST_SESSION")
+                && second_harness.contains_marker("CIRANDA_SECOND_SESSION")
             {
                 break;
             }
             thread::sleep(Duration::from_millis(50));
         }
-        assert!(first_output.contains("CIRANDA_FIRST_SESSION"));
-        assert!(!first_output.contains("CIRANDA_SECOND_SESSION"));
-        assert!(second_output.contains("CIRANDA_SECOND_SESSION"));
-        assert!(!second_output.contains("CIRANDA_FIRST_SESSION"));
+        assert!(
+            first_harness.contains_marker("CIRANDA_FIRST_SESSION"),
+            "first session must produce its own marker; {}",
+            first_harness.diagnostics()
+        );
+        assert!(
+            !first_harness.contains_marker("CIRANDA_SECOND_SESSION"),
+            "first session must not receive the second session's marker; {}",
+            first_harness.diagnostics()
+        );
+        assert!(
+            second_harness.contains_marker("CIRANDA_SECOND_SESSION"),
+            "second session must produce its own marker; {}",
+            second_harness.diagnostics()
+        );
+        assert!(
+            !second_harness.contains_marker("CIRANDA_FIRST_SESSION"),
+            "second session must not receive the first session's marker; {}",
+            second_harness.diagnostics()
+        );
+        first_harness
+            .poll(&manager, &first.id)
+            .expect("raw PTY harness should drain first session before shutdown");
+        second_harness
+            .poll(&manager, &second.id)
+            .expect("raw PTY harness should drain second session before shutdown");
         manager.shutdown();
         assert!(manager
             .list()
@@ -1164,9 +1325,16 @@ mod tests {
         let info = manager
             .create(None, 80, 24)
             .expect("real Windows ConPTY should start");
+        let mut harness = RawPtyHarness::default();
+        harness
+            .settle_startup(&manager, &info.id)
+            .expect("raw PTY harness should answer startup cursor queries");
         manager.write(&info.id, &command).unwrap();
         let deadline = Instant::now() + Duration::from_secs(8);
         let child_pid = loop {
+            harness
+                .poll(&manager, &info.id)
+                .expect("raw PTY harness should answer cursor queries");
             if let Ok(pid) = fs::read_to_string(&pid_file) {
                 if let Ok(pid) = pid.trim().parse::<u32>() {
                     break pid;
@@ -1174,7 +1342,8 @@ mod tests {
             }
             assert!(
                 Instant::now() < deadline,
-                "PowerShell descendant did not report its pid"
+                "PowerShell descendant did not report its pid; {}",
+                harness.diagnostics()
             );
             thread::sleep(Duration::from_millis(50));
         };
@@ -1182,6 +1351,9 @@ mod tests {
             is_process_running(child_pid),
             "descendant should be running before session close"
         );
+        harness
+            .poll(&manager, &info.id)
+            .expect("raw PTY harness should drain output before session close");
         manager.close(&info.id).unwrap();
         let kill_deadline = Instant::now() + Duration::from_secs(8);
         while is_process_running(child_pid) && Instant::now() < kill_deadline {
