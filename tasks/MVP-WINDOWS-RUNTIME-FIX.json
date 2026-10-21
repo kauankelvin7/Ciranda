@@ -15,7 +15,7 @@
     "run_id": 39604837626,
     "job_id": 119238256266,
     "source_commit": "423e7bdf12fe145009bf6145e07f56bd08fc035f",
-    "checkout_commit": "f72488a032906e57ba5ee37b6c507c34ef5ad45a",
+    "checkout_commit": "f72488ae3461e13516bb945bb16a9a8eefe7fd1d",
     "base_commit": "34aaf69ae702f80ae455618307d2b155291c8198",
     "conclusion": "failure",
     "rust_tests": {
