@@ -1,43 +1,57 @@
 # MVP-WINDOWS-RUNTIME-FIX — revisão preparada
 
-**Estado:** implementação pronta para revisão independente; sem aprovação de contrato.
+**Estado:** implementação pronta para revisão independente do REGENTE; sem aprovação de contrato, sem Selo.
 
 ## Base e escopo
 
 - Branch: `codex/mvp-windows-runtime-fix`
-- Base: `9ff17e2bd1a602e32c6a5bcec5150ff875c4ff54`
-- Worktree começou limpa e sem arquivos staged.
-- Allowed paths: `path_policy.rs`, `sessions.rs`, `job_object.rs`, `tasks/MVP-WINDOWS-RUNTIME-FIX.json` e este resumo; evidências locais ficam em `proofs/mvp-pty/windows-validation/runtime-fix/`.
-- Nenhum arquivo IPC, manifesto, dependência ou lockfile foi alterado.
+- Base: `423e7bdf12fe145009bf6145e07f56bd08fc035f` (parent `9ff17e2bd1a602e32c6a5bcec5150ff875c4ff54`)
+- Finalização estreita assumida temporariamente por JARDINEIRO sob ordem do REGENTE após FERREIRO atingir cota Codex.
+- Allowed paths: `path_policy.rs`, `tasks/MVP-WINDOWS-RUNTIME-FIX.json`, `docs/reviews/MVP-WINDOWS-RUNTIME-FIX.md` e `proofs/mvp-pty/windows-validation/runtime-fix/`.
+- `sessions.rs`, `job_object.rs`, arquivos IPC, manifesto, dependências ou lockfile não foram tocados neste lote.
 
 ## Causas e evidências
 
-### Prefixo de caminho Windows
+### Prefixo de caminho Windows (CI 39604837626)
 
-O log CI `39596358922/job119209525838` registra `workspace path cannot be inspected` nos testes de raiz absoluta configurada e cwd aninhado. Em `reject_reparse_components`, `Component::Prefix` era acrescentado e consultado com `symlink_metadata` antes de `Component::RootDir`; no Windows isso tenta inspecionar um prefixo de drive incompleto, como `C:`. A alteração espera até `current.is_absolute()` e então continua a consulta de cada componente. A regressão adicional inspeciona um caminho canônico, e os testes existentes continuam cobrindo raiz/cwd válidos, traversal, UNC/device, ADS, nomes reservados e symlink.
+Na execução de CI `39604837626` (job `119238256266`), 18 de 21 testes passaram (12 de sessions e 4 de storage passaram com êxito). As 3 únicas falhas ocorreram em `path_policy`:
+- `canonical_workspace_root_components_can_be_inspected`
+- `cwd_accepts_workspace_and_nested_directories`
+- `workspace_root_uses_configured_absolute_directory`
 
-### Harness PTY sem terminal
+Todas as três falharam com a mensagem `"workspace path cannot be inspected"`.
 
-O código upstream de `portable-pty` cria ConPTY com `PSEUDOCONSOLE_INHERIT_CURSOR`. A Microsoft documenta que esse modo envia uma consulta de cursor por `hOutput` e espera a resposta por `hInput`, de forma assíncrona. Os quatro testes Windows que dependem de execução PowerShell real falharam por ausência de saída, exit, PID ou marcadores. O log CI preservado não registra os bytes brutos; portanto a relação com a consulta é uma causa sustentada pelo flag e pelo contrato ConPTY, ainda pendente de confirmação por nova execução Windows.
+**Causa raiz isolada:**
+No Windows (confirmado em Rust 1.94.1), um prefixo de disco verbatim como `\\?\C:` tem `is_absolute() == true` antes que o separador de raiz `Component::RootDir` seja iterado. No commit `423e7bd`, a condição de guarda verificava apenas `if !current.is_absolute() { continue; }`. Consequentemente, para caminhos canônicos (`\\?\C:\...`), o prefixo incompleto `\\?\C:` não era pulado e `fs::symlink_metadata(r"\\?\C:")` era invocado. Na API Win32, consultar atributos de `\\?\C:` sem a barra final retorna o erro de sistema operacional 1 (`ERROR_INVALID_FUNCTION` / `Função incorreta`), que `path_policy` mapeava para `"workspace path cannot be inspected"`.
 
-O harness Windows de `sessions.rs` responde `CSI 6 n` (`ESC[6n`) com uma resposta CPR sintética (`ESC[1;1R`) apenas nos testes. Antes de enviar comandos, `settle_startup` exige que uma consulta seja observada e respondida, limitado a um segundo; sem consulta, a falha inclui diagnóstico raw. Os timeouts de saída do PowerShell e de espera pelo arquivo PID também incluem bytes escapados e hex. Os marcadores ainda são montados em segmentos distintos no comando e as asserções continuam verificando a saída real, o isolamento entre as duas sessões, o estado de saída e o PID/encerramento do descendente.
+**Solução refinada:**
+Introduzida a flag `root_seen`, marcada como verdadeira apenas quando `Component::RootDir` é anexado ao caminho acumulado `current`:
+```rust
+if !root_seen || !current.is_absolute() {
+    continue;
+}
+```
+Isso garante que tanto prefixos de drive padrão (`C:`) quanto prefixos verbatim (`\\?\C:`, `\\?\UNC\server\share`) sejam ignorados até que a raiz completa (`C:\`, `\\?\C:\`) esteja montada. A partir do momento em que a raiz é montada, cada componente subsequente continua sendo inspecionado estritamente.
 
-Referências primárias: [fonte upstream portable-pty no Windows](https://github.com/wezterm/wezterm/blob/05343b387085842b434d267f91b6b0ec157e4331/pty/src/win/psuedocon.rs) e [documentação Microsoft de CreatePseudoConsole](https://learn.microsoft.com/en-us/windows/console/createpseudoconsole).
+### Harness PTY e sessões Windows (confirmados no CI)
+
+O harness de PTY Windows com resposta a consultas `CSI 6 n` e diagnóstico delimitado comprovou seu funcionamento no CI `39604837626`: todos os 12 testes de sessões (incluindo PTY real do PowerShell, timeouts com diagnóstico, encerramento de descendente no Job Object e isolamento entre sessões) passaram sem falhas.
 
 ## Mudanças
 
-- Adiada a inspeção de metadados até que o caminho esteja absoluto; caminhos locais e canônicos continuam sujeitos a verificações por componente.
-- Adicionada regressão para inspeção de raiz canônica.
-- Adicionado harness raw PTY de teste para responder consultas de cursor e registrar saída escapada/hex em falhas.
-- Mantidas as asserções de comportamento real e os checks anti-echo existentes.
-- `is_process_running` agora só é compilada para Windows em testes, onde a função é usada.
-- Nenhuma alteração ao comportamento PTY de produção ou ao IPC.
+- `apps/desktop/src-tauri/src/path_policy.rs`:
+  - `reject_reparse_components` aguarda `root_seen` e `current.is_absolute()` antes de inspecionar metadados, evitando consulta inválida sobre `\\?\C:`.
+  - Inspeciona cada componente individual após a raiz completa.
+  - Mantidas asserções e rejeições estritas contra travessia (`..`), junctions/symlinks, ADS, nomes reservados e caminhos de dispositivo/UNC.
+  - Adicionado teste unitário `reject_reparse_components_rejects_parent_traversal` e validação dupla (caminho padrão e canônico verbatim) em `canonical_workspace_root_components_can_be_inspected`.
+- `tasks/MVP-WINDOWS-RUNTIME-FIX.json`:
+  - Metadados atualizados com hash SHA-256 do arquivo modificado, evidências do CI 39604837626 e checks leves.
 
 ## Checks e pendências
 
-- `rustup run 1.94.1-x86_64-pc-windows-msvc rustfmt --check ...`: exit 0.
-- `git diff --check` nos três fontes alterados: exit 0, sem saída.
-- Parse JSON da tarefa e da evidência local: exit 0.
-- `cargo check`, `cargo test`, build, Clippy e runtime nativo: não executados por instrução; compilação e regressões Windows permanecem sem validação local.
-- Nova CI e push: não executados; aguardam revisão independente JARDINEIRO e decisão REGENTE.
-- Nenhum Selo, liberação GC-04 ou alegação de runtime nativo validado.
+- `git diff --check` no arquivo `path_policy.rs`: exit 0, limpo.
+- Teste de lógica isolado compilado e executado com `rustc 1.94.1`: aprovado (verificados caminhos padrão, canônico, aninhado e rejeição de traversal).
+- Parse JSON da tarefa `tasks/MVP-WINDOWS-RUNTIME-FIX.json`: exit 0, sem BOM.
+- `cargo check`, `cargo test`, build, Clippy e runtime nativo: não executados localmente por instrução explícita de economia de recursos ("sem Cargo pesado"); validação final dependerá da revisão independente do REGENTE e da próxima CI.
+- Nova CI e push: não executados; aguardam revisão e autorização do REGENTE.
+- Nenhum Selo, liberação de GC-04 ou alegação de runtime nativo validado sem testes completos.

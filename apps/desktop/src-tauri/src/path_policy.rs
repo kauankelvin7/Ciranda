@@ -107,20 +107,24 @@ pub(crate) fn ensure_directory_without_reparse(path: &Path) -> Result<(), String
 
 pub(crate) fn reject_reparse_components(path: &Path) -> Result<(), String> {
     let mut current = PathBuf::new();
+    let mut root_seen = false;
     for component in path.components() {
         match component {
             Component::Prefix(prefix) => current.push(prefix.as_os_str()),
-            Component::RootDir => current.push(component.as_os_str()),
+            Component::RootDir => {
+                current.push(component.as_os_str());
+                root_seen = true;
+            }
             Component::CurDir => {}
             Component::ParentDir => {
                 return Err("path traversal is not allowed".into());
             }
             Component::Normal(name) => current.push(name),
         }
-        // A Windows drive prefix such as `C:` is not an inspectable path until
-        // its root separator has been added. Continue checking each component
-        // once the path is absolute, including canonical `\\?\` paths.
-        if !current.is_absolute() {
+        // `is_absolute` can be true for a verbatim Windows prefix before a
+        // RootDir component has been observed. Inspect only after appending
+        // the complete root, then inspect every following path component.
+        if !root_seen || !current.is_absolute() {
             continue;
         }
         match fs::symlink_metadata(&current) {
@@ -334,9 +338,23 @@ mod tests {
     #[test]
     fn canonical_workspace_root_components_can_be_inspected() {
         let test_root = TestRoot::new();
+        reject_reparse_components(test_root.path())
+            .expect("standard workspace root components should be inspectable");
         let canonical = fs::canonicalize(test_root.path()).unwrap();
         reject_reparse_components(&canonical)
             .expect("canonical workspace root components should be inspectable");
+    }
+
+    #[test]
+    fn reject_reparse_components_rejects_parent_traversal() {
+        #[cfg(windows)]
+        let path = Path::new("C:\\workspace\\..\\outside");
+        #[cfg(not(windows))]
+        let path = Path::new("/workspace/../outside");
+        assert_eq!(
+            reject_reparse_components(path),
+            Err("path traversal is not allowed".into())
+        );
     }
 
     #[test]

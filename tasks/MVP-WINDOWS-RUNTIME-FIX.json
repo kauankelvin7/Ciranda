@@ -1,72 +1,66 @@
 {
   "id": "MVP-WINDOWS-RUNTIME-FIX",
-  "owner": "FERREIRO",
+  "owner": "FERREIRO (finalização temporária por JARDINEIRO)",
   "status": "implemented_pending_independent_review",
   "branch": "codex/mvp-windows-runtime-fix",
-  "base_commit": "9ff17e2bd1a602e32c6a5bcec5150ff875c4ff54",
+  "base_commit": "423e7bdf12fe145009bf6145e07f56bd08fc035f",
   "allowed_paths": [
     "apps/desktop/src-tauri/src/path_policy.rs",
-    "apps/desktop/src-tauri/src/sessions.rs",
-    "apps/desktop/src-tauri/src/job_object.rs",
     "tasks/MVP-WINDOWS-RUNTIME-FIX.json",
     "docs/reviews/MVP-WINDOWS-RUNTIME-FIX.md",
     "proofs/mvp-pty/windows-validation/runtime-fix/"
   ],
-  "authorization": "Implement the bounded Windows path and raw PTY test-harness fixes. No IPC, manifest, dependency, or lockfile changes. No local Cargo check/test/build/clippy, push, or new CI before independent review and Regente decision.",
+  "authorization": "Finish the narrow Windows path policy fix following Ferreiro quota exhaustion. No IPC, manifest, dependency, lockfile, sessions.rs or job_object.rs changes. No heavy cargo check/test/build/clippy, push, or new CI before independent review and Regente decision.",
   "source_ci": {
-    "run_id": 39596358922,
-    "job_id": 119209525838,
-    "source_commit": "9ff17e2bd1a602e32c6a5bcec5150ff875c4ff54",
-    "checkout_commit": "19797af02ca6344cd87297bbacbb99007421cccd",
+    "run_id": 39604837626,
+    "job_id": 119238256266,
+    "source_commit": "423e7bdf12fe145009bf6145e07f56bd08fc035f",
+    "checkout_commit": "f72488a032906e57ba5ee37b6c507c34ef5ad45a",
     "base_commit": "34aaf69ae702f80ae455618307d2b155291c8198",
     "conclusion": "failure",
     "rust_tests": {
-      "executed": 20,
-      "passed": 14,
-      "failed": 6,
+      "executed": 21,
+      "passed": 18,
+      "failed": 3,
       "ignored": 0
     },
-    "log": "proofs/mvp-pty/windows-validation/runtime-fix/ci-39596358922-job-119209525838.log",
-    "log_sha256": "77ea11425a3178ac4387b01af5f12207d1b8780f68bfdf9a5bcbc5451dcd56b6",
+    "log": "proofs/mvp-pty/windows-validation/runtime-fix/ci-39604837626-job-119238256266.log",
+    "log_sha256": "e510646f76051d3cf9652004d299cf450f13fb7ff046f72a897d50251f196438",
     "findings": [
-      "workspace_root_uses_configured_absolute_directory and cwd_accepts_workspace_and_nested_directories returned workspace path cannot be inspected on Windows.",
-      "real_powershell_pty_reads_writes_resizes_and_closes did not observe its real output marker.",
-      "normal_powershell_exit_is_reported_as_exited_not_failed timed out before observing process exit.",
-      "closing_session_kills_a_descendant_process_in_the_job did not observe the child PID file.",
-      "two_real_sessions_keep_input_and_output_independent did not observe both real output markers."
+      "All 12 sessions tests and 4 storage tests passed in CI on Windows Server 2025.",
+      "The only three failures were path_policy tests: workspace_root_uses_configured_absolute_directory, canonical_workspace_root_components_can_be_inspected, and cwd_accepts_workspace_and_nested_directories.",
+      "All three failed with 'workspace path cannot be inspected' due to verbatim Windows disk prefix (\\\\?\\C:) being treated as absolute before seeing RootDir, attempting symlink_metadata on \\\\?\\C: which fails with OS error 1 (Função incorreta)."
     ],
-    "other_jobs": "Node 24 frontend and eight governance checks passed; clippy, Tauri build, and native smoke were skipped."
+    "other_jobs": "Frontend and governance checks passed; clippy, Tauri build, and native smoke were skipped."
   },
   "changes": [
-    "Skip filesystem metadata inspection while a Windows path contains only an incomplete drive prefix; inspect the root and every subsequent component once the path is absolute.",
-    "Add a regression for inspecting canonical workspace-root components while preserving traversal, UNC/device, reserved-name, and reparse-point rejection tests.",
-    "Add a Windows-only raw PTY test harness that responds to CSI 6 n through session input and requires an observed, answered startup query within one second before sending commands; startup, exit, and PID timeout failures include bounded raw diagnostics.",
+    "Wait for root_seen (Component::RootDir) and is_absolute() before metadata inspection in reject_reparse_components, ensuring verbatim Windows prefixes (\\\\?\\C:) are not inspected prior to appending the root separator.",
+    "Inspect every following path component once root_seen and is_absolute are satisfied, preserving strict rejection of traversal (..), symlinks, junctions, ADS, UNC/device, and reserved device names.",
     "Keep real PowerShell output, process exit, descendant PID/termination, session-independence, and anti-echo assertions active; production PTY and IPC behavior are unchanged.",
-    "Compile the process-running diagnostic helper only for Windows tests, where it is used."
+    "Add regression unit test reject_reparse_components_rejects_parent_traversal and verify both standard disk and canonical verbatim roots in canonical_workspace_root_components_can_be_inspected."
   ],
   "source_sha256": {
-    "apps/desktop/src-tauri/src/path_policy.rs": "b9e98b9a2c864757577021d5f574e99cf2dfc9e10ebfbaa00c5da16f9ab8a343",
+    "apps/desktop/src-tauri/src/path_policy.rs": "664ae39a3bdfcc74559bd96369d7924954bbdf7b2ad4b26bea71cdd7df85ec27",
     "apps/desktop/src-tauri/src/sessions.rs": "0009c11bddf208f14926e8e75146d65ab1867036df684677df505245ec76857d",
     "apps/desktop/src-tauri/src/job_object.rs": "fa3adc295382f48e9b6387bf15b604db1f5899a456e3a4de1d37e33e4dc22a78"
   },
   "validation": {
     "status": "light_checks_passed_windows_runtime_unverified",
-    "rustfmt_1_94_1": {
-      "toolchain": "1.94.1-x86_64-pc-windows-msvc",
-      "version_output": "rustfmt 1.8.0-stable (e408947bfd 2026-03-25)",
-      "command": "rustup run 1.94.1-x86_64-pc-windows-msvc rustfmt --check apps/desktop/src-tauri/src/path_policy.rs apps/desktop/src-tauri/src/sessions.rs apps/desktop/src-tauri/src/job_object.rs",
-      "exit_code": 0
-    },
     "git_diff_check": {
-      "command": "git diff --check -- apps/desktop/src-tauri/src/path_policy.rs apps/desktop/src-tauri/src/sessions.rs apps/desktop/src-tauri/src/job_object.rs",
+      "command": "git diff --check -- apps/desktop/src-tauri/src/path_policy.rs",
       "exit_code": 0,
       "output": "empty"
     },
     "json_parse": {
-      "method": "JSON.parse on tasks/MVP-WINDOWS-RUNTIME-FIX.json via context-mode",
+      "method": "JSON.parse on tasks/MVP-WINDOWS-RUNTIME-FIX.json via Node.js",
       "exit_code": 0,
-      "task_id": "MVP-WINDOWS-RUNTIME-FIX",
-      "allowed_paths_count": 6
+      "task_id": "MVP-WINDOWS-RUNTIME-FIX"
+    },
+    "standalone_logic_test": {
+      "compiler": "rustc 1.94.1 (e408947bf 2026-03-25)",
+      "command": "rustc test_path_policy_logic.rs && test_path_policy_logic.exe",
+      "exit_code": 0,
+      "result": "verified standard temp_dir, canonical temp_dir, nested dir, and traversal rejection"
     },
     "cargo_check": "not_run_by_owner_order",
     "cargo_test": "not_run_by_owner_order",
@@ -76,5 +70,5 @@
     "new_ci_run": "not_run_pending_independent_review_and_regente_decision",
     "push": "not_run_pending_independent_review_and_regente_decision"
   },
-  "updated_utc": "2026-10-21T12:52:15Z"
+  "updated_utc": "2026-10-21T15:06:00Z"
 }
