@@ -12,53 +12,40 @@
 
 ## Causas e evidências
 
-### Prefixo de caminho Windows (CI 39604837626)
+### Validação dos Testes Rust na CI (CI 39626023848)
 
-Na execução de CI `39604837626` (job `119238256266`), 18 de 21 testes passaram (12 de sessions e 4 de storage passaram com êxito). As 3 únicas falhas ocorreram em `path_policy`:
-- `canonical_workspace_root_components_can_be_inspected`
-- `cwd_accepts_workspace_and_nested_directories`
-- `workspace_root_uses_configured_absolute_directory`
+Na execução de CI `39626023848` (job `119311368072`, checkout `647adad9d2f85a5b5fff603d0661278e902013cd`), **todos os 23 testes Rust foram aprovados** (23 passed, 0 failed, 0 ignored em 3.17s):
+- 12 testes de `sessions` aprovados (incluindo PTY ConPTY real, encerramento de descendente no Job Object, anti-echo e timeouts com diagnóstico).
+- 4 testes de `storage` aprovados.
+- 7 testes de `path_policy` aprovados (confirmando a eficácia da resolução de prefixo verbatim `\\?\C:` com `root_seen` e da blindagem *fail-closed*).
 
-Todas as três falharam com a mensagem `"workspace path cannot be inspected"`.
+### Achado Único de Clippy (CI 39626023848)
 
-**Causa raiz isolada:**
-No Windows (confirmado experimentalmente em Rust 1.94.1), um prefixo de disco verbatim como `\\?\C:` tem `is_absolute() == true` antes que o separador de raiz `Component::RootDir` seja iterado. No commit `423e7bd`, a condição de guarda verificava apenas `if !current.is_absolute() { continue; }`. Consequentemente, para caminhos canônicos (`\\?\C:\...`), o prefixo incompleto `\\?\C:` não era pulado e `fs::symlink_metadata(r"\\?\C:")` era invocado. Na API Win32, consultar atributos de `\\?\C:` sem a barra final retorna o erro de sistema operacional 1 (`ERROR_INVALID_FUNCTION` / `Função incorreta`), que `path_policy` mapeava para `"workspace path cannot be inspected"`.
-
-**Solução refinada e Fail-Closed:**
-1. Introduzida a flag `root_seen`, marcada como verdadeira apenas quando `Component::RootDir` é anexado ao caminho acumulado `current`:
-```rust
-if !root_seen || !current.is_absolute() {
-    continue;
-}
+A etapa de Clippy falhou exclusivamente no lint `manual_pattern_char_comparison` em `src/path_policy.rs:65:27`:
 ```
-Isso garante que tanto prefixos de drive padrão (`C:`) quanto prefixos verbatim (`\\?\C:`, `\\?\UNC\server\share`) sejam ignorados até que a raiz completa (`C:\`, `\\?\C:\`) esteja montada. A partir do momento em que a raiz é montada, cada componente subsequente continua sendo inspecionado estritamente.
+65 |     for part in raw.split(|ch| ch == '/' || ch == '\\') {
+   |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: consider using an array of `char`: `['/', '\\']`
+   = note: `-D clippy::manual-pattern-char-comparison` implied by `-D warnings`
+```
+Devido ao erro no Clippy (`exit code 1`), as etapas subsequentes de build Tauri e smoke nativo foram puladas pelo workflow.
 
-2. **Blindagem Fail-Closed contra caminhos sem RootDir:**
-Para garantir que nenhum caminho sem raiz explícita pule todas as consultas e retorne `Ok(())` (por exemplo, `\\?\C:`, caminhos relativos ou drive-relative `C:foo`), adicionou-se:
-- Validação inicial `if !path.is_absolute() { return Err("workspace path must be an absolute path with a root directory".into()); }`.
-- Verificação pós-loop `if !root_seen { return Err("workspace path must be an absolute path with a root directory".into()); }`.
-Desta forma, todo caminho aceito inspeciona obrigatoriamente a raiz completa e todos os componentes, e qualquer caminho sem raiz explícita falha fechado imediatamente.
-
-### Harness PTY e sessões Windows (confirmados no CI)
-
-O harness de PTY Windows com resposta a consultas `CSI 6 n` e diagnóstico delimitado comprovou seu funcionamento no CI `39604837626`: todos os 12 testes de sessões (incluindo PTY real do PowerShell, timeouts com diagnóstico, encerramento de descendente no Job Object e isolamento entre sessões) passaram sem falhas.
+**Correção Implementada:**
+- Substituída a closure por array de caracteres equivalente: `raw.split(['/', '\\'])`.
+- Sem adicionar `#[allow(...)]`, sem enfraquecer lints do projeto, sem alterar workflows de CI.
+- Todos os 23 testes unitários continuam preservados e válidos.
 
 ## Mudanças
 
 - `apps/desktop/src-tauri/src/path_policy.rs`:
-  - `reject_reparse_components` aguarda `root_seen` e `current.is_absolute()` antes de inspecionar metadados, evitando consulta inválida sobre `\\?\C:`.
-  - Inspeciona cada componente individual após a raiz completa.
-  - Implementa verificação fail-closed exigindo `path.is_absolute()` e `root_seen` explícito.
-  - Mantidas asserções e rejeições estritas contra travessia (`..`), junctions/symlinks, ADS, nomes reservados e caminhos de dispositivo/UNC.
-  - Adicionado teste unitário `reject_reparse_components_rejects_parent_traversal` e validação dupla (caminho padrão e canônico verbatim) em `canonical_workspace_root_components_can_be_inspected`.
-  - Adicionado teste unitário `reject_reparse_components_rejects_paths_without_root_directory` testando 5 variações sem raiz (`relative`, `""`, `\\?\C:`, `C:foo\bar`, `\foo\bar`).
+  - `resolve_cwd`: `raw.split(['/', '\\'])` adotado conforme recomendação idiomática do Clippy.
+  - `reject_reparse_components`: preservados o guard `root_seen` e a blindagem *fail-closed* (`!path.is_absolute()` e `!root_seen`).
+  - Testes unitários existentes preservados integralmente.
 - `tasks/MVP-WINDOWS-RUNTIME-FIX.json`:
-  - Metadados atualizados com hash SHA-256 do arquivo modificado (`2f2d65f2d8849a589451408035908368398bfd048e73b271268a129a077e177d`), evidências do CI 39604837626 e checks leves instrumentados com 9 experimentos.
+  - Metadados atualizados com informações do run `39626023848`, checkout `647adad9d2f85a5b5fff603d0661278e902013cd`, status de 23 testes Rust passados e hash SHA-256 do fonte modificado (`47fd122503fdf567b5f5ad645c7e8ad66d850f161a374be251e3d4f82ada301d`).
 
 ## Checks e pendências
 
 - `git diff --check` no arquivo `path_policy.rs`: exit 0, limpo.
-- Experimento e suíte de verificação de 9 casos com `rustc 1.94.1`: aprovado (verificados caminhos padrão, canônico verbatim, diretório aninhado, rejeição de travessia e 5 casos de fail-closed sem RootDir).
 - Parse JSON da tarefa `tasks/MVP-WINDOWS-RUNTIME-FIX.json`: exit 0, sem BOM.
 - `cargo check`, `cargo test`, build, Clippy e runtime nativo: não executados localmente por instrução explícita de economia de recursos ("sem Cargo pesado"); validação final dependerá da revisão independente do REGENTE e da próxima CI.
 - Nova CI e push: não executados; aguardam revisão e autorização do REGENTE.

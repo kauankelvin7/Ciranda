@@ -12,37 +12,38 @@
   ],
   "authorization": "Finish the narrow Windows path policy fix following Ferreiro quota exhaustion. No IPC, manifest, dependency, lockfile, sessions.rs or job_object.rs changes. No heavy cargo check/test/build/clippy, push, or new CI before independent review and Regente decision.",
   "source_ci": {
-    "run_id": 39604837626,
-    "job_id": 119238256266,
-    "source_commit": "423e7bdf12fe145009bf6145e07f56bd08fc035f",
-    "checkout_commit": "f72488ae3461e13516bb945bb16a9a8eefe7fd1d",
+    "run_id": 39626023848,
+    "job_id": 119311368072,
+    "source_commit": "f42fab9eb7effdf9b286b5439fe075b9c2e3e04a",
+    "checkout_commit": "647adad9d2f85a5b5fff603d0661278e902013cd",
     "base_commit": "34aaf69ae702f80ae455618307d2b155291c8198",
     "conclusion": "failure",
     "rust_tests": {
-      "executed": 21,
-      "passed": 18,
-      "failed": 3,
+      "executed": 23,
+      "passed": 23,
+      "failed": 0,
       "ignored": 0
     },
-    "log": "proofs/mvp-pty/windows-validation/runtime-fix/ci-39604837626-job-119238256266.log",
-    "log_sha256": "e510646f76051d3cf9652004d299cf450f13fb7ff046f72a897d50251f196438",
+    "log": "proofs/mvp-pty/windows-validation/runtime-fix/ci-39626023848-job-119311368072.log",
+    "log_sha256": "6bb7820c43e8573eff428f3b25b538557d45e19d8efc421b026b6c2fbeb17cb3",
     "findings": [
-      "All 12 sessions tests and 4 storage tests passed in CI on Windows Server 2025.",
-      "The only three failures were path_policy tests: workspace_root_uses_configured_absolute_directory, canonical_workspace_root_components_can_be_inspected, and cwd_accepts_workspace_and_nested_directories.",
-      "All three failed with 'workspace path cannot be inspected' due to verbatim Windows disk prefix (\\\\?\\C:) being treated as absolute before seeing RootDir, attempting symlink_metadata on \\\\?\\C: which fails with OS error 1 (Função incorreta)."
+      "All 23 Rust tests passed (12 sessions tests, 4 storage tests, 7 path_policy tests) in CI on Windows Server 2025; path prefix and fail-closed fixes verified.",
+      "Clippy failed solely on manual_pattern_char_comparison in src/path_policy.rs:65: raw.split(|ch| ch == '/' || ch == '\\\\') flagged for replacement with array of char ['/', '\\\\'].",
+      "Tauri build and native smoke steps were skipped due to the clippy failure."
     ],
-    "other_jobs": "Frontend and governance checks passed; clippy, Tauri build, and native smoke were skipped."
+    "other_jobs": "Frontend, governance, and license checks passed."
   },
   "changes": [
     "Wait for root_seen (Component::RootDir) and is_absolute() before metadata inspection in reject_reparse_components, ensuring verbatim Windows prefixes (\\\\?\\C:) are not inspected prior to appending the root separator.",
     "Inspect every following path component once root_seen and is_absolute are satisfied, preserving strict rejection of traversal (..), symlinks, junctions, ADS, UNC/device, and reserved device names.",
     "Fail closed by enforcing path.is_absolute() and verifying root_seen upon loop completion, ensuring no path lacking an explicit root directory can bypass inspection and return Ok.",
+    "Replace closure pattern with char array ['/', '\\\\'] in resolve_cwd raw.split call (path_policy.rs:65) resolving clippy::manual_pattern_char_comparison without allow pragmas or weaker lints.",
     "Keep real PowerShell output, process exit, descendant PID/termination, session-independence, and anti-echo assertions active; production PTY and IPC behavior are unchanged.",
     "Add regression unit test reject_reparse_components_rejects_parent_traversal and verify both standard disk and canonical verbatim roots in canonical_workspace_root_components_can_be_inspected.",
     "Add unit test reject_reparse_components_rejects_paths_without_root_directory verifying fail-closed rejection of relative paths, empty paths, verbatim drive prefixes without root, drive-relative paths, and rooted paths without drive."
   ],
   "source_sha256": {
-    "apps/desktop/src-tauri/src/path_policy.rs": "2f2d65f2d8849a589451408035908368398bfd048e73b271268a129a077e177d",
+    "apps/desktop/src-tauri/src/path_policy.rs": "47fd122503fdf567b5f5ad645c7e8ad66d850f161a374be251e3d4f82ada301d",
     "apps/desktop/src-tauri/src/sessions.rs": "0009c11bddf208f14926e8e75146d65ab1867036df684677df505245ec76857d",
     "apps/desktop/src-tauri/src/job_object.rs": "fa3adc295382f48e9b6387bf15b604db1f5899a456e3a4de1d37e33e4dc22a78"
   },
@@ -72,5 +73,5 @@
     "new_ci_run": "not_run_pending_independent_review_and_regente_decision",
     "push": "not_run_pending_independent_review_and_regente_decision"
   },
-  "updated_utc": "2026-10-21T15:25:00Z"
+  "updated_utc": "2026-10-21T15:45:00Z"
 }

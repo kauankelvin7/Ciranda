@@ -62,7 +62,7 @@ pub(crate) fn resolve_cwd(root: &Path, cwd: Option<&str>) -> Result<PathBuf, Str
 
     let mut candidate = root.to_path_buf();
     let mut saw_component = false;
-    for part in raw.split(|ch| ch == '/' || ch == '\\') {
+    for part in raw.split(['/', '\\']) {
         if part.is_empty() || part == "." {
             continue;
         }
