@@ -117,6 +117,12 @@ pub(crate) fn reject_reparse_components(path: &Path) -> Result<(), String> {
             }
             Component::Normal(name) => current.push(name),
         }
+        // A Windows drive prefix such as `C:` is not an inspectable path until
+        // its root separator has been added. Continue checking each component
+        // once the path is absolute, including canonical `\\?\` paths.
+        if !current.is_absolute() {
+            continue;
+        }
         match fs::symlink_metadata(&current) {
             Ok(metadata) => {
                 if metadata.file_type().is_symlink() || is_windows_reparse_point(&current) {
@@ -289,7 +295,7 @@ fn is_windows_reparse_point(_path: &Path) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{resolve_cwd, resolve_workspace_root};
+    use super::{reject_reparse_components, resolve_cwd, resolve_workspace_root};
     use std::fs;
     use std::path::{Path, PathBuf};
     use uuid::Uuid;
@@ -323,6 +329,14 @@ mod tests {
         let resolved = resolve_workspace_root(Some(test_root.path().as_os_str()), Path::new("."))
             .expect("configured root should resolve");
         assert_eq!(resolved, fs::canonicalize(test_root.path()).unwrap());
+    }
+
+    #[test]
+    fn canonical_workspace_root_components_can_be_inspected() {
+        let test_root = TestRoot::new();
+        let canonical = fs::canonicalize(test_root.path()).unwrap();
+        reject_reparse_components(&canonical)
+            .expect("canonical workspace root components should be inspectable");
     }
 
     #[test]
