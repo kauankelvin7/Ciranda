@@ -106,6 +106,9 @@ pub(crate) fn ensure_directory_without_reparse(path: &Path) -> Result<(), String
 }
 
 pub(crate) fn reject_reparse_components(path: &Path) -> Result<(), String> {
+    if !path.is_absolute() {
+        return Err("workspace path must be an absolute path with a root directory".into());
+    }
     let mut current = PathBuf::new();
     let mut root_seen = false;
     for component in path.components() {
@@ -138,6 +141,9 @@ pub(crate) fn reject_reparse_components(path: &Path) -> Result<(), String> {
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
             Err(_) => return Err("workspace path cannot be inspected".into()),
         }
+    }
+    if !root_seen {
+        return Err("workspace path must be an absolute path with a root directory".into());
     }
     Ok(())
 }
@@ -355,6 +361,27 @@ mod tests {
             reject_reparse_components(path),
             Err("path traversal is not allowed".into())
         );
+    }
+
+    #[test]
+    fn reject_reparse_components_rejects_paths_without_root_directory() {
+        let cases = [
+            Path::new("relative/path/to/file"),
+            Path::new(""),
+            #[cfg(windows)]
+            Path::new(r"\\?\C:"),
+            #[cfg(windows)]
+            Path::new("C:foo\\bar"),
+            #[cfg(windows)]
+            Path::new(r"\foo\bar"),
+        ];
+        for invalid in cases {
+            assert_eq!(
+                reject_reparse_components(invalid),
+                Err("workspace path must be an absolute path with a root directory".into()),
+                "expected fail-closed error for path {invalid:?}"
+            );
+        }
     }
 
     #[test]

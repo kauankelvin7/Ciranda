@@ -36,11 +36,13 @@
   "changes": [
     "Wait for root_seen (Component::RootDir) and is_absolute() before metadata inspection in reject_reparse_components, ensuring verbatim Windows prefixes (\\\\?\\C:) are not inspected prior to appending the root separator.",
     "Inspect every following path component once root_seen and is_absolute are satisfied, preserving strict rejection of traversal (..), symlinks, junctions, ADS, UNC/device, and reserved device names.",
+    "Fail closed by enforcing path.is_absolute() and verifying root_seen upon loop completion, ensuring no path lacking an explicit root directory can bypass inspection and return Ok.",
     "Keep real PowerShell output, process exit, descendant PID/termination, session-independence, and anti-echo assertions active; production PTY and IPC behavior are unchanged.",
-    "Add regression unit test reject_reparse_components_rejects_parent_traversal and verify both standard disk and canonical verbatim roots in canonical_workspace_root_components_can_be_inspected."
+    "Add regression unit test reject_reparse_components_rejects_parent_traversal and verify both standard disk and canonical verbatim roots in canonical_workspace_root_components_can_be_inspected.",
+    "Add unit test reject_reparse_components_rejects_paths_without_root_directory verifying fail-closed rejection of relative paths, empty paths, verbatim drive prefixes without root, drive-relative paths, and rooted paths without drive."
   ],
   "source_sha256": {
-    "apps/desktop/src-tauri/src/path_policy.rs": "664ae39a3bdfcc74559bd96369d7924954bbdf7b2ad4b26bea71cdd7df85ec27",
+    "apps/desktop/src-tauri/src/path_policy.rs": "2f2d65f2d8849a589451408035908368398bfd048e73b271268a129a077e177d",
     "apps/desktop/src-tauri/src/sessions.rs": "0009c11bddf208f14926e8e75146d65ab1867036df684677df505245ec76857d",
     "apps/desktop/src-tauri/src/job_object.rs": "fa3adc295382f48e9b6387bf15b604db1f5899a456e3a4de1d37e33e4dc22a78"
   },
@@ -58,9 +60,9 @@
     },
     "standalone_logic_test": {
       "compiler": "rustc 1.94.1 (e408947bf 2026-03-25)",
-      "command": "rustc test_path_policy_logic.rs && test_path_policy_logic.exe",
+      "command": "rustc test_fail_closed.rs && test_fail_closed.exe",
       "exit_code": 0,
-      "result": "verified standard temp_dir, canonical temp_dir, nested dir, and traversal rejection"
+      "result": "verified standard temp_dir, canonical verbatim temp_dir, nested dir, traversal rejection, and 5 fail-closed rootless path cases"
     },
     "cargo_check": "not_run_by_owner_order",
     "cargo_test": "not_run_by_owner_order",
@@ -70,5 +72,5 @@
     "new_ci_run": "not_run_pending_independent_review_and_regente_decision",
     "push": "not_run_pending_independent_review_and_regente_decision"
   },
-  "updated_utc": "2026-10-21T15:06:00Z"
+  "updated_utc": "2026-10-21T15:25:00Z"
 }
